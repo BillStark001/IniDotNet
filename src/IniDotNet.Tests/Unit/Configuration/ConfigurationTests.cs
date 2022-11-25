@@ -1,5 +1,5 @@
-﻿using IniDotNet;
-using IniDotNet.Configuration;
+﻿using IniDotNet.Model;
+using IniDotNet.Parser;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Configuration

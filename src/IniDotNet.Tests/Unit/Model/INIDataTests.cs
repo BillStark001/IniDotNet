@@ -1,4 +1,5 @@
 ﻿using IniDotNet;
+using IniDotNet.Model;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Model

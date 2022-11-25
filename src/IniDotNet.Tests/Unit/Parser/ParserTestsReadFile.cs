@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using IniDotNet.Exceptions;
+using IniDotNet.Model;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Parser

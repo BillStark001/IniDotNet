@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using IniDotNet.Configuration;
+using IniDotNet.Format;
 
 namespace IniDotNet.Tests.Unit.Format
 {

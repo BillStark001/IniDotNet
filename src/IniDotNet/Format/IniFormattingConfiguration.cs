@@ -1,5 +1,7 @@
-﻿using System;
-namespace IniDotNet.Configuration;
+﻿using IniDotNet.Base;
+using System;
+
+namespace IniDotNet.Format;
 
 public class IniFormattingConfiguration : IDeepCloneable<IniFormattingConfiguration>
 {

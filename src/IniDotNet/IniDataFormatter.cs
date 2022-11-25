@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
-using IniDotNet.Configuration;
 using IniDotNet.Model;
 using IniDotNet.Format;
+using IniDotNet.Base;
 
 namespace IniDotNet
 {

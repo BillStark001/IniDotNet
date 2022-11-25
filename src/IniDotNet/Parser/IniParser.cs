@@ -14,13 +14,13 @@ namespace IniDotNet
 	/// 	Responsible for parsing an string from an ini file, and creating
 	/// 	an <see cref="IniData"/> structure.
 	/// </summary>
-    public partial class IniDataParser
+    public class IniParser
     {
         #region Initialization
         /// <summary>
         ///     Ctor
         /// </summary>
-        public IniDataParser()
+        public IniParser()
         {
             Scheme = new IniScheme();
             Configuration = new IniParserConfiguration();
@@ -106,11 +106,11 @@ namespace IniDotNet
         /// <exception cref="ParsingException">
         ///     Thrown if the data could not be parsed
         /// </exception>       
-        public void Parse(TextReader textReader, ref IniData iniData)
+        public void Parse(TextReader textReader, IIniDataHandler iniData)
         {
             iniData.Clear();
 
-            iniData.Scheme = Scheme.DeepClone();
+            iniData.SetScheme(Scheme.DeepClone());
 
             _errorExceptions.Clear();
             if (Configuration.ParseComments)
@@ -196,14 +196,14 @@ namespace IniDotNet
         ///     (section or key/value pair who may or may not have comments)
         /// </summary>
         protected virtual void ProcessLine(StringBuffer currentLine,
-                                           IniData iniData)
+                                           IIniDataHandler iniData)
         {
             if (currentLine.IsEmpty || currentLine.IsWhitespace) return;
 
             // TODO: change this to a global (IniData level) array of comments
             // Extract comments from current line and store them in a tmp list
 
-            if (ProcessComment(currentLine)) return;
+            if (ProcessComment(currentLine, iniData)) return;
 
             if (ProcessSection(currentLine, iniData)) return;
 
@@ -222,7 +222,7 @@ namespace IniDotNet
                                        currentLine.DiscardChanges().ToString());
         }
 
-        protected virtual bool ProcessComment(StringBuffer currentLine)
+        protected virtual bool ProcessComment(StringBuffer currentLine, IIniDataHandler iniData)
         {
             // Line is  med when it came here, so we only need to check if
             // the first characters are those of the comments
@@ -254,6 +254,7 @@ namespace IniDotNet
                 comment.Trim();
             }
             
+            
             CurrentCommentListTemp.Add(comment.ToString());
 
             return true;
@@ -265,7 +266,7 @@ namespace IniDotNet
         /// <param name="currentLine">
         ///     The string to be processed
         /// </param>
-        protected virtual bool ProcessSection(StringBuffer currentLine, IniData iniData)
+        protected virtual bool ProcessSection(StringBuffer currentLine, IIniDataHandler iniData)
         {
             if (currentLine.Count <= 0) return false;
 
@@ -337,7 +338,7 @@ namespace IniDotNet
             return true;
         }
 
-        protected virtual bool ProcessProperty(StringBuffer currentLine, IniData iniData)
+        protected virtual bool ProcessProperty(StringBuffer currentLine, IIniDataHandler iniData)
         {
             if (currentLine.Count <= 0) return false;
 

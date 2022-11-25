@@ -1,4 +1,4 @@
-﻿namespace IniDotNet;
+﻿namespace IniDotNet.Base;
 
 /// <summary>
 /// Creates a deep copy of the type T, meaning that all reference types get

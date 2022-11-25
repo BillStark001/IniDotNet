@@ -1,5 +1,5 @@
 using System;
-using IniDotNet;
+using IniDotNet.Model;
 
 namespace IniDotNet.Example
 {

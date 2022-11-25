@@ -1,4 +1,4 @@
-using IniDotNet.Configuration;
+using IniDotNet.Model;
 
 namespace IniDotNet.Format;
 

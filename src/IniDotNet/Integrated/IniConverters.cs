@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace IniDotNet.Format;
+namespace IniDotNet.Integrated;
 
 public interface IIniConverter<T>
 {

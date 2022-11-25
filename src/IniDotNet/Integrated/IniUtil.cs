@@ -1,5 +1,4 @@
-﻿using IniDotNet.Format;
-using IniDotNet.Model;
+﻿using IniDotNet.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IniDotNet.Parser;
+namespace IniDotNet.Integrated;
 
 
 using DSSP = Dictionary<(string, string), PropertyInfo>;
@@ -42,7 +41,7 @@ public static class IniUtils
         return ans;
     }
 
-    public static IEnumerable<Type> GetTaggedTypes<T>(Assembly[] assembly) where T: Attribute
+    public static IEnumerable<Type> GetTaggedTypes<T>(Assembly[] assembly) where T : Attribute
     {
         foreach (Type type in assembly.SelectMany(s => s.GetTypes()))
         {
@@ -96,7 +95,7 @@ public static class IniUtils
         var cvrt = _cvrt.MakeGenericMethod(new Type[] { t }).Invoke(null, new[] { asm });
         if (cvrt == null)
             throw new InvalidOperationException($"No possible converter found for type {t.FullName}.");
-        return (string) cvrt.GetType().GetMethod("Serialize")!.Invoke(cvrt, new[] { o })!;
+        return (string)cvrt.GetType().GetMethod("Serialize")!.Invoke(cvrt, new[] { o })!;
     }
 
     public static string GetIniEscapedString(this string strIn)

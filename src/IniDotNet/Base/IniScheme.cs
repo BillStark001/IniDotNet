@@ -1,6 +1,6 @@
 ﻿using IniDotNet.Model;
 
-namespace IniDotNet.Configuration;
+namespace IniDotNet.Base;
 
 /// <summary>
 /// This structure defines the format of the INI file by customization the characters used to define sections

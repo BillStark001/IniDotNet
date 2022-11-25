@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using IniDotNet;
 using IniDotNet.Model;
 using NUnit.Framework;
 

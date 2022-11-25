@@ -1,6 +1,6 @@
 ﻿using IniDotNet;
-using IniDotNet.Configuration;
 using IniDotNet.Exceptions;
+using IniDotNet.Parser;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Configuration

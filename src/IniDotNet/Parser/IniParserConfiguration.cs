@@ -1,6 +1,7 @@
-﻿using IniDotNet.Model;
+﻿using IniDotNet.Base;
+using IniDotNet.Model;
 
-namespace IniDotNet.Configuration;
+namespace IniDotNet.Parser;
 
 /// <summary>
 ///     Defines data for a Parser configuration object.

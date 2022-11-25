@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IniDotNet.Format
+namespace IniDotNet.Parser
 {
-    internal class IIniConverter
+    internal class IniDataHandler
     {
     }
 }
