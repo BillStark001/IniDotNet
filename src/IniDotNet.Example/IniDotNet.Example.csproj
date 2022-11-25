@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<IsPackable>False</IsPackable>
+		<Nullable>enable</Nullable>
+		<ReleaseVersion></ReleaseVersion>
+	</PropertyGroup>
+
+	<!-- Auto-select supported target frameworks based on MSBuild version -->
+	<PropertyGroup>
+		<TargetFrameworks>net6.0</TargetFrameworks>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\IniDotNet\IniDotNet.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="TestIniFile.ini">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+</Project>
