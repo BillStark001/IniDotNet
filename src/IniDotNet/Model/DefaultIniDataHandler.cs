@@ -1,12 +1,12 @@
 ﻿using IniDotNet.Exceptions;
-using IniDotNet.Model;
+using IniDotNet.Parser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IniDotNet.Parser;
+namespace IniDotNet.Model;
 public class DefaultIniDataHandler : IIniDataHandler<IniData>
 {
     #region Fields & Properties
@@ -66,8 +66,8 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
 
     public void Start()
     {
-        _value = Configuration.CaseInsensitive ? 
-            new IniDataCaseInsensitive() : 
+        _value = Configuration.CaseInsensitive ?
+            new IniDataCaseInsensitive() :
             new IniData();
     }
 
@@ -146,9 +146,9 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
 
         AddKeyToKeyValueCollection(
             key,
-            value, 
+            value,
             props,
-            _currentSectionNameTemp ?? "global", 
+            _currentSectionNameTemp ?? "global",
             line);
 
     }
@@ -199,7 +199,7 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
             keyDataCollection.FindByKey(key)!.Comments = CurrentCommentListTemp;
             CurrentCommentListTemp.Clear();
         }
-    
+
     }
 
 
@@ -211,7 +211,7 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
     void HandleDuplicatedKeyInCollection(string key,
                                          string value,
                                          PropertyCollection keyDataCollection,
-                                         string sectionName, 
+                                         string sectionName,
                                          uint line)
     {
         switch (Configuration.DuplicatePropertiesBehaviour)

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace IniDotNet.Integrated;
+
 public class IniSerializerRecord
 {
     private readonly MethodInfo _serializer;
