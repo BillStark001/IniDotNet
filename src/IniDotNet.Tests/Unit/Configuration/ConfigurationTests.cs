@@ -41,10 +41,12 @@ name = Marble Zone
         public void setup()
         {
             _parser = new IniDataParser();
-            _parser.Scheme.SectionStartString = "<";
-            _parser.Scheme.SectionEndString = ">";
-            _parser.Scheme.CommentString = "#";
-            _parser.Scheme.PropertyAssigmentString = "=";
+            // _parser.Scheme.SectionStartString = "<";
+            // _parser.Scheme.SectionEndString = ">";
+            // _parser.Scheme.CommentString = "#";
+            // _parser.Scheme.PropertyAssigmentString = "=";
+            _parser.Scheme.SectionPattern = new(@"^ *<(.*)>");
+            _parser.Scheme.CommentPattern = new(@"^ *(#)(.*)");
 
             _parser.Configuration.AllowKeysWithoutSection = true;
             _parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue;
@@ -62,7 +64,8 @@ name = Marble Zone
 
             _parser = new IniDataParser();
 
-            _parser.Scheme.CommentString = "#";
+            // _parser.Scheme.CommentString = "#";
+            _parser.Scheme.CommentPattern = new(@"^ *(#)(.*)");
 
             var iniData = _parser.Parse(iniStr);
 
@@ -140,7 +143,8 @@ name = Marble Zone
                 Key=Value";
          
             var parser = new IniDataParser();
-            parser.Scheme.CommentString = @"\";
+            // parser.Scheme.CommentString = @"\";
+            parser.Scheme.CommentPattern = new(@"^ *(\\)(.*)");
 
             parser.Parse(iniStr);
         }
@@ -153,8 +157,9 @@ name = Marble Zone
                 key=value";
 
             var parser = new IniDataParser();
-            parser.Scheme.SectionStartString = "\\";
-            parser.Scheme.SectionEndString = "\\";
+            // .Scheme.SectionStartString = "\\";
+            // parser.Scheme.SectionEndString = "\\";
+            parser.Scheme.SectionPattern = new(@"^ *\\(.*)\\");
 
             var iniData = parser.Parse(iniStr);
 

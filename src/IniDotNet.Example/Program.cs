@@ -27,7 +27,8 @@ patty = pattypass ";
 
             // This is a special ini file where we use the '#' character for comment lines
             // instead of ';' so we need to change the configuration of the parser:
-            parser.Scheme.CommentString = "#";
+            parser.Configuration.AllowNumberSignComments = true;
+            parser.Scheme.AssignFrom(new(parser.Configuration));
 
             // Here we'll be storing the contents of the ini file we are about to read:
             IniData parsedData = parser.Parse(testIniFile);

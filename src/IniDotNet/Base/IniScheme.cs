@@ -1,4 +1,5 @@
 ﻿using IniDotNet.Model;
+using IniDotNet.Parser;
 using System.Text.RegularExpressions;
 
 namespace IniDotNet.Base;
@@ -61,9 +62,19 @@ public class IniScheme : IDeepCloneable<IniScheme>
     ///         </para>
     ///     </example>
     /// </remarks>
-    public IniScheme()
+    public IniScheme() : this(false, false, false)
     {
+
     }
+
+    public IniScheme(IniParserConfiguration conf) : this(
+        conf.AllowNumberSignComments,
+        conf.UseEscapeCharacters,
+        conf.UseColonSeparator
+        )
+    {
+
+    } 
 
     public IniScheme(bool numberSignComment, bool escapeCharacters, bool colonSeparator)
     {
@@ -91,6 +102,11 @@ public class IniScheme : IDeepCloneable<IniScheme>
     ///     Original instance to be copied.
     /// </param>
     IniScheme(IniScheme ori)
+    {
+        AssignFrom(ori);
+    }
+
+    public void AssignFrom(IniScheme ori)
     {
         PropertyAssigmentString = ori.PropertyAssigmentString;
         SectionStartString = ori.SectionStartString;

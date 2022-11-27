@@ -22,11 +22,7 @@ namespace IniDotNet
         public IniParser()
         {
             Configuration = new IniParserConfiguration();
-            Scheme = new(
-                Configuration.AllowNumberSignComments,
-                Configuration.UseEscapeCharacters,
-                Configuration.UseColonSeparator
-                );
+            Scheme = new(Configuration);
             _errorExceptions = new List<Exception>();
         }
 
@@ -200,7 +196,7 @@ namespace IniDotNet
                 return true;
 
             if (Configuration.TrimComments)
-                comment.Trim();
+                comment = comment.Trim();
 
             iniData.HandleComment(comment, _currentLineNumber);
 
@@ -221,7 +217,7 @@ namespace IniDotNet
 
             var comment = matchRes.Groups[2].Value;
             if (Configuration.TrimComments)
-                comment.Trim();
+                comment = comment.Trim();
 
             iniData.HandleComment(comment, _currentLineNumber);
 
@@ -245,7 +241,7 @@ namespace IniDotNet
 
             var sectionName = matchRes.Groups[1].Value;
             if (Configuration.TrimSections)
-                sectionName.Trim();
+                sectionName = sectionName.Trim();
             
 
             //Checks if the section already exists
@@ -301,8 +297,8 @@ namespace IniDotNet
 
             if (Configuration.TrimProperties)
             {
-                key.Trim();
-                value.Trim();
+                key = key.Trim();
+                value = value.Trim();
             }
 
             if (Configuration.UseEscapeCharacters)

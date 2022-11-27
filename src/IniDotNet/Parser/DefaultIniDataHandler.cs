@@ -38,7 +38,7 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
 
     // Temp var of the value being parsed
     IniData? _value;
-    IniData iniData => _value ?? throw new InvalidOperationException();
+    IniData iniData => _value ?? (_value = new());
 
     // configurations
     public IniParserConfiguration Configuration { get; set; }
@@ -125,7 +125,22 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
 
     public void HandleProperty(string key, string value, uint line)
     {
-        var props = _currentSectionNameTemp == null ?
+        if (string.IsNullOrEmpty(_currentSectionNameTemp))
+        {
+            if (!Configuration.AllowKeysWithoutSection)
+            {
+                var errorFormat = "Properties must be contained inside a section. Please see configuration option {0}.{1} to ignore this error.";
+                var errorMsg = string.Format(errorFormat,
+                                            nameof(Configuration),
+                                            nameof(Configuration.AllowKeysWithoutSection));
+
+                throw new ParsingException(errorMsg,
+                                           line,
+                                           $"{key} = {value}");
+            }
+        }
+
+        var props = string.IsNullOrEmpty(_currentSectionNameTemp) ?
             iniData.Global :
             iniData.Sections.FindByName(_currentSectionNameTemp)!.Properties;
 

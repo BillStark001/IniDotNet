@@ -64,13 +64,13 @@ mykey1 = value1
         public void parse_ini_string_with_custom_configuration()
         {
             var parser = new IniDataParser();
-			
-			
 
-            parser.Scheme.CommentString = "#";
-            parser.Scheme.SectionStartString = "<";
-            parser.Scheme.SectionEndString = ">";
-			
+            // parser.Scheme.CommentString = "#";
+            // parser.Scheme.SectionStartString = "<";
+            // parser.Scheme.SectionEndString = ">";
+            parser.Scheme.CommentPattern = new(@"^ *(#)(.*)");
+            parser.Scheme.SectionPattern = new(@"^ *<(.*)>");
+
             IniData data = parser.Parse(iniFileStrCustom);
 
             Assert.That(data, Is.Not.Null);
@@ -135,7 +135,8 @@ connectionString = Server=sqlserver.domain.com;Database=main;User ID=user;Passwo
 
 
             var parser = new IniDataParser();
-            parser.Scheme.CommentString = "#";
+            // parser.Scheme.CommentString = "#";
+            parser.Scheme.CommentPattern = new(@"^ *(#)(.*)");
             IniData iniData = parser.Parse(data);
 
             Assert.That(
@@ -309,7 +310,8 @@ value2 = 10";
             
             var parser = new IniDataParser();
 
-            parser.Scheme.CommentString = "#";
+            // parser.Scheme.CommentString = "#";
+            parser.Scheme.CommentPattern = new(@"^ *(#)(.*)");
 
             var result = parser.Parse(initest);
             Assert.That(result.Sections.FindByName("seccion1").Comments.Count > 0);

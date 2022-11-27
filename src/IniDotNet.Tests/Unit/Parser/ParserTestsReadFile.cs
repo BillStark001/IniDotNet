@@ -56,7 +56,8 @@ namespace IniDotNet.Tests.Unit.Parser
         public void check_parse_long_file()
         {
             var parser = new IniDataParser();
-            parser.Scheme.CommentString = "//";
+            // parser.Scheme.CommentString = "//";
+            parser.Scheme.CommentPattern = new(@"^ *(//)(.*)");
 
             IniData parsedData = ReadAndParseIniFile(parser, "long_file.ini", Encoding.ASCII);
 
