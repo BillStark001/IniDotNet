@@ -10,13 +10,17 @@ namespace IniDotNet.Parser;
 public interface IIniDataHandler
 {
     public void Clear();
+    public void Start();
+    public void End();
 
-    public void HandleComment(string comment, int line);
+    public void HandleComment(string comment, uint line);
 
-    public void HandleProperty(string key, string value, int line);
+    public void HandleProperty(string key, string value, uint line);
 
-    public void HandleMultilineProperty(string value, int line);
+    public void HandleMultilineProperty(string? key, string value, uint line);
 
-    public void EnterSection(string nspace, int line);
+    public void EnterSection(string section, uint line);
+
+    public bool IsSectionEntered(string section, uint line);
 
 }

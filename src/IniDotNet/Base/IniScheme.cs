@@ -11,8 +11,28 @@ namespace IniDotNet.Base;
 public class IniScheme : IDeepCloneable<IniScheme>
 {
 
-    public static readonly Regex CommentPattern = new(@"^;(.*)");
-    public static readonly Regex SectionPattern = new(@"^ *\[()\]");
+    public const string NoOddNumberBackslash = @"(?<=[^\\])(?:\\\\)*";
+
+
+    public static readonly Regex CommentPatternDefault = new(@"^ *(;)(.*)");
+    public static readonly Regex CommentPatternNumberSign = new(@"^ *(;|#)(.*)");
+
+    public static readonly Regex InlineCommentPatternDefault = new(@"(;)(.*)$");
+    public static readonly Regex InlineCommentPatternNumberSign = new(@"(;|#)(.*)$");
+    public static readonly Regex InlineCommentPatternEscape = new($@"{NoOddNumberBackslash}(;)(.*)$");
+    public static readonly Regex InlineCommentPatternNumberSignEscape = new($@"{NoOddNumberBackslash}(;|#)(.*)$");
+
+    public static readonly Regex SectionPatternDefault = new(@"^ *\[(.*)\]");
+
+    public static readonly Regex KeyValueSeparatorPatternDefault = new(@"(=)");
+    public static readonly Regex KeyValueSeparatorPatternEscape = new($@"{NoOddNumberBackslash}(=)");
+    public static readonly Regex KeyValueSeparatorPatternColon = new(@"(=|:)");
+    public static readonly Regex KeyValueSeparatorPatternColonEscape = new($@"{NoOddNumberBackslash}(=|:)");
+
+    public static readonly Regex MultilineIndicatorPatternDefault = new(@"(\\) *$");
+    public static readonly Regex MultilineIndicatorPatternEscape = new(@$"{NoOddNumberBackslash}(\\) *$");
+
+
 
     static IniScheme()
     {
@@ -45,6 +65,25 @@ public class IniScheme : IDeepCloneable<IniScheme>
     {
     }
 
+    public IniScheme(bool numberSignComment, bool escapeCharacters, bool colonSeparator)
+    {
+        SectionPattern = SectionPatternDefault;
+        CommentPattern = numberSignComment ? CommentPatternNumberSign : CommentPatternDefault;
+
+        if (escapeCharacters)
+        {
+            InlineCommentPattern = numberSignComment ? InlineCommentPatternNumberSignEscape : InlineCommentPatternEscape;
+            KeyValueSeparatorPattern = colonSeparator ? KeyValueSeparatorPatternColonEscape : KeyValueSeparatorPatternEscape;
+            MultilineIndicatorPattern = MultilineIndicatorPatternEscape;
+        }
+        else
+        {
+            InlineCommentPattern = numberSignComment ? InlineCommentPatternNumberSign : InlineCommentPatternDefault;
+            KeyValueSeparatorPattern = colonSeparator ? KeyValueSeparatorPatternColon : KeyValueSeparatorPatternDefault;
+            MultilineIndicatorPattern = MultilineIndicatorPatternDefault;
+        }
+    }
+
     /// <summary>
     ///     Copy ctor.
     /// </summary>
@@ -57,7 +96,53 @@ public class IniScheme : IDeepCloneable<IniScheme>
         SectionStartString = ori.SectionStartString;
         SectionEndString = ori.SectionEndString;
         CommentString = ori.CommentString;
+
+        CommentPattern = ori.CommentPattern;
+        InlineCommentPattern = ori.InlineCommentPattern;
+        KeyValueSeparatorPattern = ori.KeyValueSeparatorPattern;
+        SectionPattern = ori.SectionPattern;
+        MultilineIndicatorPattern = ori.MultilineIndicatorPattern;
     }
+
+
+    public Regex CommentPattern
+    {
+        get => _comment ?? CommentPatternDefault;
+        set => _comment = value;
+    }
+
+    public Regex InlineCommentPattern
+    {
+        get => _inlineComment ?? InlineCommentPatternDefault;
+        set => _inlineComment = value;
+    }
+    
+    public Regex KeyValueSeparatorPattern
+    {
+        get => _keyValue ?? KeyValueSeparatorPatternDefault;
+        set => _keyValue = value;
+    }
+    
+    public Regex SectionPattern
+    {
+        get => _section ?? SectionPatternDefault;
+        set => _section = value;
+    }
+    
+    public Regex MultilineIndicatorPattern
+    {
+        get => _multiline ?? MultilineIndicatorPatternDefault;
+        set => _multiline = value;
+    }
+
+    public Regex? _comment;
+    public Regex? _inlineComment;
+    public Regex? _keyValue;
+    public Regex? _section;
+    public Regex? _multiline;
+
+
+    #region Old Definitions
 
     /// <summary>
     ///     Sets the string that defines the start of a comment.
@@ -115,6 +200,8 @@ public class IniScheme : IDeepCloneable<IniScheme>
         get => string.IsNullOrWhiteSpace(_propertyAssigmentString) ? "=" : _propertyAssigmentString;
         set => _propertyAssigmentString = value?.Trim();
     }
+
+    #endregion
 
     #region IDeepCloneable<T> Members
     /// <summary>

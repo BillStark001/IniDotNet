@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using IniDotNet.Parser;
 using IniDotNet.Model;
-using static IniDotNet.Parser.StringBuffer;
 using IniDotNet.Base;
 
 namespace IniDotNet
@@ -86,6 +85,9 @@ namespace IniDotNet
         public void Parse(TextReader textReader, IIniDataHandler iniData)
         {
             Reset();
+            iniData.Clear();
+
+            iniData.Start();
 
             string? currentLine;
             while ((currentLine = textReader.ReadLine()) != null)
@@ -106,38 +108,7 @@ namespace IniDotNet
                 }
             }
 
-            // TODO: is this try necessary?
-            try
-            {
-                // Orphan comments, assing to last section/key value
-                if (Configuration.ParseComments && CurrentCommentListTemp.Count > 0)
-                {
-                    if (iniData.Sections.Count > 0)
-                    {
-                        // Check if there are actually sections in the file
-                        var sections = iniData.Sections;
-                        var section = sections.FindByName(_currentSectionNameTemp!);
-                        section!.Comments.AddRange(CurrentCommentListTemp);
-                    }
-                    else if (iniData.Global.Count > 0)
-                    {
-                        // No sections, put the comment in the last key value pair
-                        // but only if the ini file contains at least one key-value pair
-                        iniData.Global.GetLast()!.Comments.AddRange(CurrentCommentListTemp);
-                    }
-
-                    CurrentCommentListTemp.Clear();
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _errorExceptions.Add(ex);
-                if (Configuration.ThrowExceptionsOnError)
-                {
-                    throw;
-                }
-            }
+            iniData.End();
 
             if (HasError)
             {
@@ -170,11 +141,20 @@ namespace IniDotNet
             // TODO: change this to a global (IniData level) array of comments
             // Extract comments from current line and store them in a tmp list
 
-            if (ProcessComment(currentLine, iniData)) return;
+            if (ProcessComment(currentLine, iniData)) 
+                return;
 
-            if (ProcessSection(currentLine, iniData)) return;
+            if (ProcessInlineComment(currentLine, iniData, out var line))
+                currentLine = line;
 
-            if (ProcessProperty(currentLine, iniData)) return;
+            if (ProcessSection(currentLine, iniData)) 
+                return;
+
+            if (ProcessProperty(currentLine, iniData)) 
+                return;
+
+            if (ProcessMultilineProperty(currentLine, iniData)) 
+                return;
 
             // the current line belongs to none of the 3 types
 
@@ -192,40 +172,47 @@ namespace IniDotNet
                                        currentLine);
         }
 
-        protected virtual bool ProcessComment(StringBuffer currentLine, IIniDataHandler iniData)
+        protected virtual bool ProcessInlineComment(in string currentLine, IIniDataHandler iniData, out string currentLineWithoutComment)
+        {
+            currentLineWithoutComment = "";
+            if (!Configuration.AllowInlineComments)
+                return false;
+
+            var matchRes = Scheme.InlineCommentPattern.Match(currentLine);
+            if (!matchRes.Success)
+                return false;
+
+            var comment = matchRes.Groups[2].Value;
+            currentLineWithoutComment = currentLine.Substring(0, matchRes.Index); // does not trim at this time
+
+            if (!Configuration.ParseComments)
+                return true;
+
+            if (Configuration.TrimComments)
+                comment.Trim();
+
+            iniData.HandleComment(comment, _currentLineNumber);
+
+            return true;
+        }
+
+        protected virtual bool ProcessComment(in string currentLine, IIniDataHandler iniData)
         {
             // Line is  med when it came here, so we only need to check if
             // the first characters are those of the comments
-            var currentLineTrimmed = currentLine.SwallowCopy();
-            currentLineTrimmed.TrimStart();
 
-            if (!currentLineTrimmed.StartsWith(Scheme.CommentString))
-            {
+            var matchRes = Scheme.CommentPattern.Match(currentLine);
+            if (!matchRes.Success)
                 return false;
-            }
 
             if (!Configuration.ParseComments)
-            {
                 return true;
-            }
 
-            currentLineTrimmed.TrimEnd();
-
-            var commentRange = currentLineTrimmed.FindSubstring(Scheme.CommentString);
-            // Exctract the range of the string that contains the comment but not
-            // the comment delimiter
-            var startIdx = commentRange.start + Scheme.CommentString.Length;
-            var size = currentLineTrimmed.Count - Scheme.CommentString.Length;
-            var range = StringBuffer.Range.FromIndexWithSize(startIdx, size);
-
-            var comment = currentLineTrimmed.Substring(range);
+            var comment = matchRes.Groups[2].Value;
             if (Configuration.TrimComments)
-            {
                 comment.Trim();
-            }
-            
-            
-            CurrentCommentListTemp.Add(comment.ToString());
+
+            iniData.HandleComment(comment, _currentLineNumber);
 
             return true;
         }
@@ -236,40 +223,18 @@ namespace IniDotNet
         /// <param name="currentLine">
         ///     The string to be processed
         /// </param>
-        protected virtual bool ProcessSection(StringBuffer currentLine, IIniDataHandler iniData)
+        protected virtual bool ProcessSection(in string currentLine, IIniDataHandler iniData)
         {
-            if (currentLine.Count <= 0) return false;
+            var matchRes = Scheme.SectionPattern.Match(currentLine);
+            if (!matchRes.Success)
+                return false;
 
-            var sectionStartRange = currentLine.FindSubstring(Scheme.SectionStartString);
+            // removed error:
+            // "No closing section value. Please see configuration option {0}.{1} to ignore this error."
 
-            if (sectionStartRange.IsEmpty) return false;
-            
-            var sectionEndRange = currentLine.FindSubstring(Scheme.SectionEndString, sectionStartRange.size);
-            if (sectionEndRange.IsEmpty)
-            {
-                if (Configuration.SkipInvalidLines) return false;
-
-
-                var errorFormat = "No closing section value. Please see configuration option {0}.{1} to ignore this error.";
-                var errorMsg = string.Format(errorFormat,
-                                             nameof(Configuration),
-                                             nameof(Configuration.SkipInvalidLines));
-
-                throw new ParsingException(errorMsg,
-                                           _currentLineNumber,
-                                           currentLine.DiscardChanges().ToString());
-            }
-
-            var startIdx = sectionStartRange.start + Scheme.SectionStartString.Length;
-            var endIdx = sectionEndRange.end - Scheme.SectionEndString.Length;
-            currentLine.ResizeBetweenIndexes(startIdx, endIdx);
-
+            var sectionName = matchRes.Groups[1].Value;
             if (Configuration.TrimSections)
-            {
-                currentLine.Trim();
-            }
-
-            var sectionName = currentLine.ToString();
+                sectionName.Trim();
 
             // Temporally save section name.
             _currentSectionNameTemp = sectionName;
@@ -277,7 +242,7 @@ namespace IniDotNet
             //Checks if the section already exists
             if (!Configuration.AllowDuplicateSections)
             {
-                if (iniData.Sections.Contains(sectionName))
+                if (iniData.IsSectionEntered(sectionName, _currentLineNumber))
                 {
                     if (Configuration.SkipInvalidLines) return false;
 
@@ -289,40 +254,41 @@ namespace IniDotNet
 
                     throw new ParsingException(errorMsg,
                                                _currentLineNumber,
-                                               currentLine.DiscardChanges().ToString());
+                                               currentLine);
                 }
             }
 
             // If the section does not exists, add it to the ini data
-            iniData.Sections.Add(sectionName);
+            iniData.EnterSection(sectionName, _currentLineNumber);
 
             // Save comments read until now and assign them to this section
-            if (Configuration.ParseComments)
-            {
-                var sections = iniData.Sections;
-                var sectionData = sections.FindByName(sectionName);
-                sectionData!.Comments.AddRange(CurrentCommentListTemp);
-                CurrentCommentListTemp.Clear();
-            }
+            // This shall be a task of the handler
 
             return true;
         }
 
-        protected virtual bool ProcessProperty(StringBuffer currentLine, IIniDataHandler iniData)
+        protected virtual bool ProcessProperty(in string currentLine, IIniDataHandler iniData)
         {
-            if (currentLine.Count <= 0) return false;
+            var matchRes = Scheme.KeyValueSeparatorPattern.Match(currentLine);
+            if (!matchRes.Success)
+                return false;
 
-            var propertyAssigmentIdx = currentLine.FindSubstring(Scheme.PropertyAssigmentString);
 
-            if (propertyAssigmentIdx.IsEmpty) return false;
+            var key = currentLine.Substring(0, matchRes.Groups[1].Index);
+            var value = currentLine.Substring(matchRes.Groups[1].Index + matchRes.Groups[1].Length);
 
-            var keyRange = StringBuffer.Range.WithIndexes(0, propertyAssigmentIdx.start - 1);
-            var valueStartIdx = propertyAssigmentIdx.end + 1;
-            var valueSize = currentLine.Count - propertyAssigmentIdx.end - 1;
-            var valueRange = StringBuffer.Range.FromIndexWithSize(valueStartIdx, valueSize);
+            // Multi-line Related
+            var multiFlag = false;
+            if (Configuration.AllowMultilineProperties)
+            {
+                var multiRes = Scheme.MultilineIndicatorPattern.Match(value);
+                if (multiRes.Success)
+                {
+                    multiFlag = true;
+                    value = value.Substring(0, multiRes.Groups[1].Index);
+                }
+            }
 
-            var key = currentLine.Substring(keyRange);
-            var value = currentLine.Substring(valueRange);
 
             if (Configuration.TrimProperties)
             {
@@ -330,7 +296,13 @@ namespace IniDotNet
                 value.Trim();
             }
 
-            if (key.IsEmpty)
+            if (Configuration.UseEscapeCharacters)
+            {
+                key = EscapeCharacterUtil.ParseValue(key);
+                value = EscapeCharacterUtil.ParseValue(value);
+            }
+
+            if (string.IsNullOrEmpty(key))
             {
                 if (Configuration.SkipInvalidLines) return false;
 
@@ -341,111 +313,34 @@ namespace IniDotNet
 
                 throw new ParsingException(errorMsg,
                                            _currentLineNumber,
-                                           currentLine.DiscardChanges().ToString());
+                                           currentLine);
             }
+
+            // Add property to data
+            if (multiFlag)
+                iniData.HandleMultilineProperty(key, value, _currentLineNumber);
+            iniData.HandleProperty(key, value, _currentLineNumber);
 
             // Check if we haven't read any section yet
-            if (string.IsNullOrEmpty(_currentSectionNameTemp))
-            {
-                if (!Configuration.AllowKeysWithoutSection)
-                {
-                    var errorFormat = "Properties must be contained inside a section. Please see configuration option {0}.{1} to ignore this error.";
-                    var errorMsg = string.Format(errorFormat,
-                                                nameof(Configuration),
-                                                nameof(Configuration.AllowKeysWithoutSection));
-
-                    throw new ParsingException(errorMsg,
-                                               _currentLineNumber,
-                                               currentLine.DiscardChanges().ToString());
-                }
-
-                AddKeyToKeyValueCollection(key.ToString(), 
-                                           value.ToString(),
-                                           iniData.Global, 
-                                           "global");
-            }
-            else
-            {
-                var currentSection = iniData.Sections.FindByName(_currentSectionNameTemp);
-
-                AddKeyToKeyValueCollection(key.ToString(),
-                                           value.ToString(), 
-                                           currentSection!.Properties,
-                                           _currentSectionNameTemp);
-            }
-
+            // This should also be a task of the handler
 
             return true;
         }
 
 
-        /// <summary>
-        ///     Abstract Method that decides what to do in case we are trying 
-        ///     to add a duplicated key to a section
-        /// </summary>
-        void HandleDuplicatedKeyInCollection(string key,
-                                             string value,
-                                             PropertyCollection keyDataCollection,
-                                             string sectionName)
+        protected virtual bool ProcessMultilineProperty(in string currentLine, IIniDataHandler iniData)
         {
-            switch(Configuration.DuplicatePropertiesBehaviour)
-            {
-                case IniParserConfiguration.EDuplicatePropertiesBehaviour.DisallowAndStopWithError:
-                    var errorMsg = string.Format("Duplicated key '{0}' found in section '{1}", key, sectionName);
-                    throw new ParsingException(errorMsg, _currentLineNumber);
-                case IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue:
-                    // Nothing to do here: we already have the first value assigned
-                    break;
-                case IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndKeepLastValue:
-                    // Override the current value when the parsing is finished we will end up
-                    // with the last value.
-                    keyDataCollection[key] = value;
-                    break;
-                case IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndConcatenateValues:
-                    keyDataCollection[key] += Configuration.ConcatenateDuplicatePropertiesString + value; 
-                    break;
-            }
-        }
-        #endregion
+            if (!Configuration.AllowMultilineProperties)
+                return false;
 
-        #region Helpers
+            var multiRes = Scheme.MultilineIndicatorPattern.Match(currentLine);
+            if (!multiRes.Success)
+                return false;
 
-        /// <summary>
-        ///     Adds a key to a concrete <see cref="PropertyCollection"/> instance, checking
-        ///     if duplicate keys are allowed in the configuration
-        /// </summary>
-        /// <param name="key">
-        ///     Key name
-        /// </param>
-        /// <param name="value">
-        ///     Key's value
-        /// </param>
-        /// <param name="keyDataCollection">
-        ///     <see cref="Property"/> collection where the key should be inserted
-        /// </param>
-        /// <param name="sectionName">
-        ///     Name of the section where the <see cref="PropertyCollection"/> is contained.
-        ///     Used only for logging purposes.
-        /// </param>
-        private void AddKeyToKeyValueCollection(string key, string value, PropertyCollection keyDataCollection, string sectionName)
-        {
-            // Check for duplicated keys
-            if (keyDataCollection.Contains(key))
-            {
-                // We already have a key with the same name defined in the current section
-                HandleDuplicatedKeyInCollection(key, value, keyDataCollection, sectionName);
-            }
-            else
-            {
-                // Save the keys
-                keyDataCollection.Add(key, value);
-            }
+            var value = currentLine.Substring(0, multiRes.Groups[1].Index);
+            iniData.HandleMultilineProperty(null, value, _currentLineNumber);
 
-            if (Configuration.ParseComments)
-            {
-                keyDataCollection.FindByKey(key)!.Comments = CurrentCommentListTemp;
-                CurrentCommentListTemp.Clear();
-            }
+            return true;
         }
 
         #endregion
