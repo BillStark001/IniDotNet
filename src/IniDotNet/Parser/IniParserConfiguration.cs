@@ -38,6 +38,7 @@ public class IniParserConfiguration : IDeepCloneable<IniParserConfiguration>
         AllowDuplicateSections = ori.AllowDuplicateSections;
         AllowMultilineProperties = ori.AllowMultilineProperties;
         UseEscapeCharacters = ori.UseEscapeCharacters;
+        UseColonSeparator = ori.UseColonSeparator;
         ThrowExceptionsOnError = ori.ThrowExceptionsOnError;
         SkipInvalidLines = ori.SkipInvalidLines;
         TrimSections = ori.TrimSections;
@@ -152,9 +153,13 @@ public class IniParserConfiguration : IDeepCloneable<IniParserConfiguration>
     public bool UseEscapeCharacters { get; set; } = false;
 
     /// <summary>
+    /// TODO
+    /// </summary>
+    public bool UseColonSeparator { get; set; } = false;
+    /// <summary>
     ///     If set to true, it continues parsing the file even if a bad formed line 
     ///     is found, but does not count as an error found (i.e. 
-    ///     <see cref="IniDataParser.HasError"/> will return false)
+    ///     <see cref="IniParser.HasError"/> will return false)
     ///     If set to false, it will throw an exception or track an error, 
     ///     depending on the value of <see cref="ThrowExceptionsOnError"/>,
     ///     when the parser encounters a badly formed line.

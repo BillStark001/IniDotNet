@@ -21,8 +21,12 @@ namespace IniDotNet
         /// </summary>
         public IniParser()
         {
-            Scheme = new IniScheme();
             Configuration = new IniParserConfiguration();
+            Scheme = new(
+                Configuration.AllowNumberSignComments,
+                Configuration.UseEscapeCharacters,
+                Configuration.UseColonSeparator
+                );
             _errorExceptions = new List<Exception>();
         }
 
@@ -61,11 +65,6 @@ namespace IniDotNet
         {
 
             _errorExceptions.Clear();
-            if (Configuration.ParseComments)
-            {
-                CurrentCommentListTemp.Clear();
-            }
-            _currentSectionNameTemp = null;
             _currentLineNumber = 0;
         }
 
@@ -108,7 +107,19 @@ namespace IniDotNet
                 }
             }
 
-            iniData.End();
+            try
+            {
+                iniData.End();
+            }
+            catch (Exception ex)
+            {
+                _errorExceptions.Add(ex);
+                if (Configuration.ThrowExceptionsOnError)
+                {
+                    throw;
+                }
+            }
+            
 
             if (HasError)
             {
@@ -235,9 +246,7 @@ namespace IniDotNet
             var sectionName = matchRes.Groups[1].Value;
             if (Configuration.TrimSections)
                 sectionName.Trim();
-
-            // Temporally save section name.
-            _currentSectionNameTemp = sectionName;
+            
 
             //Checks if the section already exists
             if (!Configuration.AllowDuplicateSections)
@@ -338,6 +347,10 @@ namespace IniDotNet
                 return false;
 
             var value = currentLine.Substring(0, multiRes.Groups[1].Index);
+
+            if (Configuration.UseEscapeCharacters)
+                value = EscapeCharacterUtil.ParseValue(value);
+
             iniData.HandleMultilineProperty(null, value, _currentLineNumber);
 
             return true;
@@ -347,39 +360,10 @@ namespace IniDotNet
 
         #region Fields
         uint _currentLineNumber;
-        bool _parsingMultiLineProperty;
 
         // Holds a list of the exceptions catched while parsing
         readonly List<Exception> _errorExceptions;
 
-        // Temp list of comments
-        public List<string> CurrentCommentListTemp
-        {
-            get
-            {
-                if (_currentCommentListTemp == null)
-                {
-                    _currentCommentListTemp = new List<string>();
-                }
-
-                return _currentCommentListTemp;
-            }
-
-            internal set
-            {
-                _currentCommentListTemp = value;
-            }
-        }
-
-
-        List<string>? _currentCommentListTemp;
-
-        // Tmp var with the name of the seccion which is being process
-        string? _currentSectionNameTemp;
-
-        // Buffer used to hold the current line being processed.
-        // Saves allocating a new string
-        readonly StringBuffer _mBuffer = new StringBuffer(256);
         #endregion
     }
 }

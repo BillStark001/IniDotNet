@@ -24,3 +24,8 @@ public interface IIniDataHandler
     public bool IsSectionEntered(string section, uint line);
 
 }
+
+public interface IIniDataHandler<T> : IIniDataHandler
+{
+    public T Get();
+}

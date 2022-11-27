@@ -104,31 +104,45 @@ public class IniScheme : IDeepCloneable<IniScheme>
         MultilineIndicatorPattern = ori.MultilineIndicatorPattern;
     }
 
-
+    /// <summary>
+    /// TODO 2
+    /// </summary>
     public Regex CommentPattern
     {
         get => _comment ?? CommentPatternDefault;
         set => _comment = value;
     }
 
+    /// <summary>
+    /// TODO 2
+    /// </summary>
     public Regex InlineCommentPattern
     {
         get => _inlineComment ?? InlineCommentPatternDefault;
         set => _inlineComment = value;
     }
     
+    /// <summary>
+    /// TODO 1
+    /// </summary>
     public Regex KeyValueSeparatorPattern
     {
         get => _keyValue ?? KeyValueSeparatorPatternDefault;
         set => _keyValue = value;
     }
     
+    /// <summary>
+    /// TODO 1
+    /// </summary>
     public Regex SectionPattern
     {
         get => _section ?? SectionPatternDefault;
         set => _section = value;
     }
     
+    /// <summary>
+    /// TODO 1
+    /// </summary>
     public Regex MultilineIndicatorPattern
     {
         get => _multiline ?? MultilineIndicatorPatternDefault;
