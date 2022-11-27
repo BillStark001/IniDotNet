@@ -8,14 +8,8 @@ using System.Threading.Tasks;
 
 namespace IniDotNet.Integrated;
 
-public interface IIniConverter<T>
-{
 
-    public string Serialize(T? value);
-    public T? Deserialize(string? value);
-}
-
-public class StringConverter : IIniConverter<string>
+public class StringConverter : IIniSerializer<string>
 {
     public string? Deserialize(string? value)
     {
@@ -28,7 +22,7 @@ public class StringConverter : IIniConverter<string>
     }
 }
 
-public class BoolConverter : IIniConverter<bool>
+public class BoolConverter : IIniSerializer<bool>
 {
     public bool Deserialize(string? value)
     {
@@ -41,7 +35,7 @@ public class BoolConverter : IIniConverter<bool>
     }
 }
 
-public class IntConverter : IIniConverter<int>
+public class IntConverter : IIniSerializer<int>
 {
     public int Deserialize(string? value)
     {
@@ -65,7 +59,7 @@ public class IntConverter : IIniConverter<int>
 
 
 
-public class StringEnumerableConverter : IIniConverter<IEnumerable<string>>
+public class StringEnumerableConverter : IIniSerializer<IEnumerable<string>>
 {
 
     private static Regex CommaRegex = new Regex(@", *");
@@ -96,7 +90,7 @@ public class StringEnumerableConverter : IIniConverter<IEnumerable<string>>
     }
 }
 
-public class StringArrayConverter : IIniConverter<string[]>
+public class StringArrayConverter : IIniSerializer<string[]>
 {
     private StringEnumerableConverter _sec = new();
     public string[] Deserialize(string? value)
@@ -110,7 +104,7 @@ public class StringArrayConverter : IIniConverter<string[]>
     }
 }
 
-public class IntArrayConverter : IIniConverter<int[]>
+public class IntArrayConverter : IIniSerializer<int[]>
 {
     private StringEnumerableConverter _sec = new();
     private IntConverter _ic = new();

@@ -58,39 +58,16 @@ namespace IniDotNet
         }
         #endregion
 
-        /// <summary>
-        ///     Parses a string containing valid ini data
-        /// </summary>
-        /// <param name="iniString">
-        ///     String with data in INI format
-        /// </param>
-        public IniData Parse(string iniString)
+        public void Reset()
         {
-            return Parse(new StringReader(iniString));
-        }
 
-        /// <summary>
-        ///     Parses a string containing valid ini data
-        /// </summary>
-        /// <param name="textReader">
-        ///     Text reader for the source string contaninig the ini data
-        /// </param>
-        /// <returns>
-        ///     An <see cref="IniData"/> instance containing the data readed
-        ///     from the source
-        /// </returns>
-        /// <exception cref="ParsingException">
-        ///     Thrown if the data could not be parsed
-        /// </exception>
-        public IniData Parse(TextReader textReader)
-        {
-            IniData iniData = Configuration.CaseInsensitive ?
-                  new IniDataCaseInsensitive(Scheme)
-                  : new IniData(Scheme);
-
-            Parse(textReader, ref iniData);
-
-            return iniData;
+            _errorExceptions.Clear();
+            if (Configuration.ParseComments)
+            {
+                CurrentCommentListTemp.Clear();
+            }
+            _currentSectionNameTemp = null;
+            _currentLineNumber = 0;
         }
 
         /// <summary>
@@ -108,26 +85,16 @@ namespace IniDotNet
         /// </exception>       
         public void Parse(TextReader textReader, IIniDataHandler iniData)
         {
-            iniData.Clear();
+            Reset();
 
-            iniData.SetScheme(Scheme.DeepClone());
-
-            _errorExceptions.Clear();
-            if (Configuration.ParseComments)
-            {
-                CurrentCommentListTemp.Clear();
-            }
-            _currentSectionNameTemp = null;
-            _mBuffer.Reset(textReader);
-            _currentLineNumber = 0;
-
-            while (_mBuffer.ReadLine())
+            string? currentLine;
+            while ((currentLine = textReader.ReadLine()) != null)
             {
                 _currentLineNumber++;
 
                 try
                 {
-                    ProcessLine(_mBuffer, iniData);
+                    ProcessLine(currentLine, iniData);
                 }
                 catch (Exception ex)
                 {
@@ -195,10 +162,10 @@ namespace IniDotNet
         ///     Processes one line and parses the data found in that line
         ///     (section or key/value pair who may or may not have comments)
         /// </summary>
-        protected virtual void ProcessLine(StringBuffer currentLine,
+        protected virtual void ProcessLine(string currentLine,
                                            IIniDataHandler iniData)
         {
-            if (currentLine.IsEmpty || currentLine.IsWhitespace) return;
+            if (string.IsNullOrWhiteSpace(currentLine)) return;
 
             // TODO: change this to a global (IniData level) array of comments
             // Extract comments from current line and store them in a tmp list
@@ -208,6 +175,9 @@ namespace IniDotNet
             if (ProcessSection(currentLine, iniData)) return;
 
             if (ProcessProperty(currentLine, iniData)) return;
+
+            // the current line belongs to none of the 3 types
+
 
             if (Configuration.SkipInvalidLines) return;
 
@@ -219,7 +189,7 @@ namespace IniDotNet
 
             throw new ParsingException(errorMsg,
                                        _currentLineNumber,
-                                       currentLine.DiscardChanges().ToString());
+                                       currentLine);
         }
 
         protected virtual bool ProcessComment(StringBuffer currentLine, IIniDataHandler iniData)
@@ -482,6 +452,7 @@ namespace IniDotNet
 
         #region Fields
         uint _currentLineNumber;
+        bool _parsingMultiLineProperty;
 
         // Holds a list of the exceptions catched while parsing
         readonly List<Exception> _errorExceptions;

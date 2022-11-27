@@ -1,4 +1,5 @@
 ﻿using IniDotNet.Model;
+using System.Text.RegularExpressions;
 
 namespace IniDotNet.Base;
 
@@ -9,6 +10,15 @@ namespace IniDotNet.Base;
 /// </summary>
 public class IniScheme : IDeepCloneable<IniScheme>
 {
+
+    public static readonly Regex CommentPattern = new(@"^;(.*)");
+    public static readonly Regex SectionPattern = new(@"^ *\[()\]");
+
+    static IniScheme()
+    {
+
+    }
+
     /// <summary>
     ///     Ctor.
     /// </summary>

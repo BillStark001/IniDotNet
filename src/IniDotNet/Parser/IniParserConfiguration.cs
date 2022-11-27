@@ -36,10 +36,14 @@ public class IniParserConfiguration : IDeepCloneable<IniParserConfiguration>
         DuplicatePropertiesBehaviour = ori.DuplicatePropertiesBehaviour;
         ConcatenateDuplicatePropertiesString = ori.ConcatenateDuplicatePropertiesString;
         AllowDuplicateSections = ori.AllowDuplicateSections;
+        AllowMultilineProperties = ori.AllowMultilineProperties;
+        UseEscapeCharacters = ori.UseEscapeCharacters;
         ThrowExceptionsOnError = ori.ThrowExceptionsOnError;
         SkipInvalidLines = ori.SkipInvalidLines;
         TrimSections = ori.TrimSections;
         TrimProperties = ori.TrimProperties;
+        AllowInlineComments = ori.AllowInlineComments;
+        AllowNumberSignComments = ori.AllowNumberSignComments;
     }
 
     /// <summary>
@@ -131,6 +135,23 @@ public class IniParserConfiguration : IDeepCloneable<IniParserConfiguration>
     public bool AllowDuplicateSections { get; set; } = false;
 
     /// <summary>
+    ///     If set to false and the <see cref="IniDataParser"/> finds an invalid line
+    ///     the parser will stop with an error.
+    ///     If set to true abd the line is ended by a backslash(\), it will be considered 
+    ///     as a continue of the last property. If there is no last property, an error 
+    ///     will be generated.
+    /// </summary>
+    /// <remarks>
+    ///     Defaults to false.
+    /// </remarks>
+    public bool AllowMultilineProperties { get; set; } = false;
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    public bool UseEscapeCharacters { get; set; } = false;
+
+    /// <summary>
     ///     If set to true, it continues parsing the file even if a bad formed line 
     ///     is found, but does not count as an error found (i.e. 
     ///     <see cref="IniDataParser.HasError"/> will return false)
@@ -180,6 +201,17 @@ public class IniParserConfiguration : IDeepCloneable<IniParserConfiguration>
     ///     saving memory and allocations.
     /// </summary>
     public bool ParseComments { get; set; } = true;
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    public bool AllowInlineComments { get; set; } = false;
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    public bool AllowNumberSignComments { get; set; } = false;
+
     #region IDeepCloneable<T> Members
     /// <summary>
     /// Creates a new object that is a copy of the current instance.

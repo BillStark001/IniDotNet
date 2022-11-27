@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,11 +9,7 @@ namespace IniDotNet.Integrated;
 
 
 
-[AttributeUsage(
-    AttributeTargets.Property |
-    AttributeTargets.Class |
-    AttributeTargets.Struct
-    )]
+[AttributeUsage(AttributeTargets.Property)]
 public class IniSectionAttribute : Attribute
 {
     public string Name { get; set; } = "";
@@ -49,11 +46,17 @@ public class IniIgnoreAttribute : Attribute
     }
 }
 
+[AttributeUsage(AttributeTargets.Property)]
 public class IniConverterAttribute : Attribute
 {
-    public Type TargetType { get; set; } = typeof(string);
-    public IniConverterAttribute(Type targetType)
+    public Type Type { get; set; }
+
+    private static readonly Type IniType = typeof(IIniSerializer<string>).GetGenericTypeDefinition();
+
+    public IniConverterAttribute(Type type)
     {
-        TargetType = targetType ?? typeof(string);
+        if (!IniType.IsAssignableFrom(type.GetGenericTypeDefinition()))
+            throw new InvalidDataException("Invalid type");
+        Type = type;
     }
 }
