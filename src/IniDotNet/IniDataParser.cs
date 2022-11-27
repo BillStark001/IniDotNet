@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using IniDotNet.Exceptions;
 using System.Collections.ObjectModel;
 using System.IO;
-using IniDotNet.Parser;
 using IniDotNet.Model;
 using static IniDotNet.Parser.StringBuffer;
 using IniDotNet.Base;
