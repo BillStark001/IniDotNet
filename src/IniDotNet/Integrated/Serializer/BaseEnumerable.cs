@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace IniDotNet.Integrated.Serializers;
+namespace IniDotNet.Integrated.Serializer;
 
 public static class EnumerableSerializationUtils
 {
@@ -81,7 +81,7 @@ public class StringArrayConverter : IIniSerializer<string[]>
 public class IntArrayConverter : IIniSerializer<int[]>
 {
     private StringEnumerableConverter _sec = new();
-    private IntConverter _ic = new();
+    private IntSerializer _ic = new();
     public int[] Deserialize(string? value)
     {
         return _sec.Deserialize(value).Select(x => _ic.Deserialize(x)).ToArray();

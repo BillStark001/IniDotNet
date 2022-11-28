@@ -1,6 +1,6 @@
 using System;
 
-namespace IniDotNet.Exceptions;
+namespace IniDotNet.Base;
 
 /// <summary>
 /// Represents an error ococcurred while parsing data 

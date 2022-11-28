@@ -1,5 +1,5 @@
 ﻿using IniDotNet;
-using IniDotNet.Exceptions;
+using IniDotNet.Base;
 using IniDotNet.Parser;
 using NUnit.Framework;
 

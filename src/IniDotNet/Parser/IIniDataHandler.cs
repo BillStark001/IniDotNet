@@ -17,7 +17,6 @@ public interface IIniDataHandler
 
     public void HandleProperty(string key, string value, uint line);
 
-    public void HandleMultilineProperty(string? key, string value, uint line);
 
     public void EnterSection(string section, uint line);
 

@@ -1,7 +1,7 @@
-﻿using IniDotNet.Exceptions;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using IniDotNet.Model;
 using IniDotNet.Parser;
+using IniDotNet.Base;
 
 namespace IniDotNet.Tests.Unit.Parser
 {

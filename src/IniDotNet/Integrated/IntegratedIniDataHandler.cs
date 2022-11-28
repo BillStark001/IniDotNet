@@ -1,5 +1,4 @@
 ﻿using IniDotNet.Base;
-using IniDotNet.Exceptions;
 using IniDotNet.Integrated.Handler;
 using IniDotNet.Integrated.Model;
 using IniDotNet.Parser;
@@ -16,7 +15,7 @@ namespace IniDotNet.Integrated;
 
 
 
-public class IntegratedIniHandler : IIniDataHandler
+public class IntegratedIniDataHandler : IIniDataHandler
 {
 
     public const int MAX_SEARCH_DEPTH = 114514;
@@ -31,7 +30,7 @@ public class IntegratedIniHandler : IIniDataHandler
     readonly Type _baseType;
     readonly string[] _basePath;
     readonly bool _allowGlobal;
-    readonly bool _allowSubsection;
+    // readonly bool _allowSubsection;
 
 
     ISectionHandler? _globalHandler;
@@ -40,7 +39,7 @@ public class IntegratedIniHandler : IIniDataHandler
     ISectionHandler GetCurrentHandler() => (_handlers.TryPeek(out var res) ? res.Item2 : _globalHandler) ?? throw new InvalidOperationException();
     Type GetCurrentType() => _handlers.TryPeek(out var res) ? res.Item3 : throw new InvalidOperationException();
 
-    public IntegratedIniHandler(Type baseType, string[]? basePath = null, bool allowGlobal = false, bool allowSubsection = false)
+    public IntegratedIniDataHandler(Type baseType, string[]? basePath = null, bool allowGlobal = false)
     {
         _data = null;
         _records = new();
@@ -50,7 +49,7 @@ public class IntegratedIniHandler : IIniDataHandler
         _baseType = baseType;
         _basePath = basePath ?? new string[0];
         _allowGlobal = allowGlobal;
-        _allowSubsection = allowSubsection;
+        // _allowSubsection = allowSubsection;
 
         Queue<Type> _types = new();
         _types.Enqueue(baseType);
@@ -119,10 +118,6 @@ public class IntegratedIniHandler : IIniDataHandler
         // do nothing at this time
     }
 
-    public void HandleMultilineProperty(string? key, string value, uint line)
-    {
-        // discarded
-    }
 
     public void HandleProperty(string key, string value, uint line)
     {

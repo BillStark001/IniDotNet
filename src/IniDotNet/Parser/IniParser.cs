@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using IniDotNet.Exceptions;
 using System.Collections.ObjectModel;
 using System.IO;
 using IniDotNet.Parser;
 using IniDotNet.Model;
 using IniDotNet.Base;
+using System.Text;
 
 namespace IniDotNet
 {
@@ -24,6 +24,7 @@ namespace IniDotNet
             Configuration = new IniParserConfiguration();
             Scheme = new(Configuration);
             _errorExceptions = new List<Exception>();
+            _multiLineCache = new StringBuilder();
         }
 
         #endregion
@@ -59,7 +60,9 @@ namespace IniDotNet
 
         public void Reset()
         {
-
+            _multiLineLine = 0;
+            _multiLineKey = "";
+            _multiLineCache.Clear();
             _errorExceptions.Clear();
             _currentLineNumber = 0;
         }
@@ -102,9 +105,11 @@ namespace IniDotNet
                     }
                 }
             }
+            
 
             try
             {
+                ProcessStoredMultilineProperty(null, iniData);
                 iniData.End();
             }
             catch (Exception ex)
@@ -115,7 +120,7 @@ namespace IniDotNet
                     throw;
                 }
             }
-            
+
 
             if (HasError)
             {
@@ -134,7 +139,7 @@ namespace IniDotNet
         // See IniDotNetConfiguration interface, and IniDataParser constructor
         // to change the default configuration.
 
-  
+
 
         /// <summary>
         ///     Processes one line and parses the data found in that line
@@ -148,19 +153,22 @@ namespace IniDotNet
             // TODO: change this to a global (IniData level) array of comments
             // Extract comments from current line and store them in a tmp list
 
-            if (ProcessComment(currentLine, iniData)) 
+            if (ProcessComment(currentLine, iniData))
                 return;
 
             if (ProcessInlineComment(currentLine, iniData, out var line))
                 currentLine = line;
 
-            if (ProcessSection(currentLine, iniData)) 
+            if (ProcessSection(currentLine, iniData))
                 return;
 
-            if (ProcessProperty(currentLine, iniData)) 
+            if (ProcessProperty(currentLine, iniData))
                 return;
 
-            if (ProcessMultilineProperty(currentLine, iniData)) 
+            if (ProcessMultilineProperty(currentLine, iniData))
+                return;
+
+            if (ProcessStoredMultilineProperty(currentLine, iniData))
                 return;
 
             // the current line belongs to none of the 3 types
@@ -239,10 +247,12 @@ namespace IniDotNet
             // removed error:
             // "No closing section value. Please see configuration option {0}.{1} to ignore this error."
 
+            ProcessStoredMultilineProperty(null, iniData);
+
             var sectionName = matchRes.Groups[1].Value;
             if (Configuration.TrimSections)
                 sectionName = sectionName.Trim();
-            
+
 
             //Checks if the section already exists
             if (!Configuration.AllowDuplicateSections)
@@ -278,6 +288,8 @@ namespace IniDotNet
             if (!matchRes.Success)
                 return false;
 
+
+            ProcessStoredMultilineProperty(null, iniData);
 
             var key = currentLine.Substring(0, matchRes.Groups[1].Index);
             var value = currentLine.Substring(matchRes.Groups[1].Index + matchRes.Groups[1].Length);
@@ -323,7 +335,11 @@ namespace IniDotNet
 
             // Add property to data
             if (multiFlag)
-                iniData.HandleMultilineProperty(key, value, _currentLineNumber);
+            {
+                _multiLineKey = key;
+                _multiLineLine = _currentLineNumber;
+                _multiLineCache.Append(value); // TODO append or appendline?
+            }
             iniData.HandleProperty(key, value, _currentLineNumber);
 
             // Check if we haven't read any section yet
@@ -332,10 +348,42 @@ namespace IniDotNet
             return true;
         }
 
+        /// <summary>
+        /// Multiline property halts when a non-returning line is encountered. <br></br>
+        /// So when a section is to be entered, another pair of key and value 
+        /// is detected, an EOF is encountered or an error line is detected, this function should be called.
+        /// </summary>
+        /// <param name="currentLine">The content of the non-returning error line or null if in other stages.</param>
+        /// <param name="iniData"></param>
+        /// <returns></returns>
+
+        protected virtual bool ProcessStoredMultilineProperty(string? currentLine, IIniDataHandler iniData)
+        {
+            if (!Configuration.AllowMultilineProperties)
+                return false;
+
+            if (_multiLineKey == null)
+                return false;
+
+            if (currentLine != null)
+                _multiLineCache.AppendLine(currentLine);
+
+            var value = _multiLineCache.ToString();
+            iniData.HandleProperty(_multiLineKey, value, _multiLineLine);
+
+            _multiLineKey = null;
+            _multiLineCache.Clear();
+            _multiLineLine = 0;
+
+            return true;
+        }
 
         protected virtual bool ProcessMultilineProperty(in string currentLine, IIniDataHandler iniData)
         {
             if (!Configuration.AllowMultilineProperties)
+                return false;
+
+            if (_multiLineKey == null)
                 return false;
 
             var multiRes = Scheme.MultilineIndicatorPattern.Match(currentLine);
@@ -347,7 +395,7 @@ namespace IniDotNet
             if (Configuration.UseEscapeCharacters)
                 value = EscapeCharacterUtil.ParseValue(value);
 
-            iniData.HandleMultilineProperty(null, value, _currentLineNumber);
+            _multiLineCache.Append(value);
 
             return true;
         }
@@ -356,6 +404,11 @@ namespace IniDotNet
 
         #region Fields
         uint _currentLineNumber;
+
+        // multi-line properties
+        readonly StringBuilder _multiLineCache;
+        uint _multiLineLine;
+        string? _multiLineKey;
 
         // Holds a list of the exceptions catched while parsing
         readonly List<Exception> _errorExceptions;
