@@ -133,10 +133,6 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
         CurrentCommentListTemp.Add(comment.ToString());
     }
 
-    public void HandleMultilineProperty(string? key, string value, uint line)
-    {
-        throw new NotImplementedException();
-    }
 
     public void HandleProperty(string key, string value, uint line)
     {

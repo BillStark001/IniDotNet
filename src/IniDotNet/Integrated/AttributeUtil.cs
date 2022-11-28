@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace IniDotNet.Integrated;
 
@@ -34,11 +35,14 @@ public static class AttributeUtil
             if (prop.GetCustomAttributes<IniIgnoreAttribute>(inherit).Count() > 0)
                 continue;
 
+
+            var processFlag = false;
             foreach (var a in prop.GetCustomAttributes<IniPropertyAttribute>(inherit))
             {
                 // determing the name
                 var aName = a.Name; // TODO determine trim or not
                 var fieldName = string.IsNullOrEmpty(aName) ? prop.Name : aName;
+                processFlag = true;
 
                 var isSection = false;
                 if (a.Type == IniType.Section)
@@ -59,6 +63,19 @@ public static class AttributeUtil
                     ansSection[aName] = prop;
                 else
                     ansKey[aName] = prop;
+            }
+
+            if (!processFlag)
+            {
+                var isSection = false;
+                if (ConversionUtil.IsStringDictionary(prop.PropertyType))
+                    isSection = true;
+                else if (prop.PropertyType.GetCustomAttribute<IniModelAttribute>() != null)
+                    isSection = true;
+                if (isSection)
+                    ansSection[prop.Name] = prop;
+                else
+                    ansKey[prop.Name] = prop;
             }
             
         }

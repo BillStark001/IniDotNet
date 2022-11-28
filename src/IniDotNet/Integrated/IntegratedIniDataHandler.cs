@@ -3,6 +3,7 @@ using IniDotNet.Integrated.Handler;
 using IniDotNet.Integrated.Model;
 using IniDotNet.Parser;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
 using System.Linq;
@@ -34,10 +35,11 @@ public class IntegratedIniDataHandler : IIniDataHandler
 
 
     ISectionHandler? _globalHandler;
+    Type? _realBaseType;
     readonly Stack<(string, ISectionHandler, Type)> _handlers;
 
     ISectionHandler GetCurrentHandler() => (_handlers.TryPeek(out var res) ? res.Item2 : _globalHandler) ?? throw new InvalidOperationException();
-    Type GetCurrentType() => _handlers.TryPeek(out var res) ? res.Item3 : throw new InvalidOperationException();
+    Type GetCurrentType() => _handlers.TryPeek(out var res) ? res.Item3 : _realBaseType ?? throw new InvalidOperationException();
 
     public IntegratedIniDataHandler(Type baseType, string[]? basePath = null, bool allowGlobal = false)
     {
@@ -74,10 +76,18 @@ public class IntegratedIniDataHandler : IIniDataHandler
     public void Start()
     {
         if (_basePath.Length == 0)
+        {
+            _realBaseType = _baseType;
             _globalHandler = ConversionUtil.SelectTypeHandler(_records[_baseType]);
+        }
         else
+        {
             _globalHandler = new HashtableSectionHandler();
+            _realBaseType = typeof(Hashtable);
+        }
+           
         _data = null;
+        _globalHandler.Start();
     }
 
     public void Clear()
@@ -128,13 +138,11 @@ public class IntegratedIniDataHandler : IIniDataHandler
 
     public void EnterSubsection(string section, uint line)
     {
-        // TODO replace type with hashtable if basepath is not null
-        var record = _records[GetCurrentType()];
-        var sectionProp = record.TryGetProperty(section) ?? throw new NotImplementedException();
+        var (handler, type) = GetCurrentHandler().GetSectionHandler(section);
         _handlers.Push((
             section, 
-            ConversionUtil.SelectTypeHandler(_records[sectionProp.PropertyType]), 
-            sectionProp.PropertyType
+            handler ?? ConversionUtil.SelectTypeHandler(_records[type]), 
+            type
             ));
         GetCurrentHandler().Start();
     }

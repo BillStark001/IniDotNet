@@ -63,4 +63,13 @@ public class ClassSectionHandler : ISectionHandler
         return _record.Constructor.Invoke(ctorParams);
 
     }
+
+    public (ISectionHandler?, Type) GetSectionHandler(string section)
+    {
+        var sectionProp = _record.TryGetProperty(section) ?? throw new NotImplementedException();
+        return (
+            null, 
+            sectionProp.PropertyType
+            );
+    }
 }

@@ -36,37 +36,48 @@ public class TypeRecord
         _t = t;
         _serializerRecords = new();
 
-        (_propsKey, _propsSection) = AttributeUtil.GetTaggedPropertyList(t, inherit);
-        var access = AttributeUtil.IsPropertiesFullyAccessible((_propsKey, _propsSection));
-        if (!access)
+        if (!ConversionUtil.IsStringDictionary(t))
         {
-            var res = AttributeUtil.GetTaggedConstructor(t, (_propsKey, _propsSection), omitIncomplete, forcePublic);
-            if (res.HasValue)
-                (_ctorParamLength, _ctorParamPos, _ctor) = res.Value;
+
+            (_propsKey, _propsSection) = AttributeUtil.GetTaggedPropertyList(t, inherit);
+            var access = AttributeUtil.IsPropertiesFullyAccessible((_propsKey, _propsSection));
+            if (!access)
+            {
+                var res = AttributeUtil.GetTaggedConstructor(t, (_propsKey, _propsSection), omitIncomplete, forcePublic);
+                if (res.HasValue)
+                    (_ctorParamLength, _ctorParamPos, _ctor) = res.Value;
+                else
+                    throw new InvalidOperationException("Unsupported type");
+            }
             else
-                throw new InvalidOperationException("Unsupported type");
+            {
+                _ctorParamLength = 0;
+                _ctorParamPos = new();
+                _ctor = AttributeUtil.GetNoParamConstructor(t, forcePublic) ?? throw new InvalidOperationException("Unsupported type");
+            }
+
+            _isCtorNoParam = access;
+            foreach (var (propName, propInfo) in _propsKey)
+            {
+                var cvrtType = propInfo.GetCustomAttribute<IniSerializerAttribute>()?.Type;
+                SerializerRecord? cvrt = null;
+                if (cvrtType != null)
+                    cvrt = ConversionUtil.TryGetConverterInnerRefl(propInfo.PropertyType, cvrtType);
+                else
+                    cvrt = ConversionUtil.TryGetConverterRefl(propInfo.PropertyType, AppDomain.CurrentDomain.GetAssemblies());
+                if (cvrt == null && !omitIncomplete)
+                    throw new InvalidOperationException("Incompleted type");
+                if (cvrt != null)
+                    _serializerRecords[propName] = cvrt;
+
+            }
         }
         else
         {
-            _ctorParamLength = 0;
+            _propsKey = new();
+            _propsSection = new();
             _ctorParamPos = new();
-            _ctor = AttributeUtil.GetNoParamConstructor(t, forcePublic) ?? throw new InvalidOperationException("Unsupported type");
-        }
-
-        _isCtorNoParam = access;
-        foreach (var (propName, propInfo) in _propsKey)
-        {
-            var cvrtType = propInfo.GetCustomAttribute<IniSerializerAttribute>()?.Type;
-            SerializerRecord? cvrt = null;
-            if (cvrtType != null)
-                cvrt = ConversionUtil.TryGetConverterInnerRefl(propInfo.PropertyType, cvrtType);
-            else
-                cvrt = ConversionUtil.TryGetConverterRefl(propInfo.PropertyType, AppDomain.CurrentDomain.GetAssemblies());
-            if (cvrt == null && !omitIncomplete)
-                throw new InvalidOperationException("Incompleted type");
-            if (cvrt != null)
-                _serializerRecords[propName] = cvrt;
-
+            _ctor = t.GetConstructors()[0];
         }
 
     }
@@ -74,7 +85,7 @@ public class TypeRecord
     public IEnumerable<Type> GetReferenceTypes()
     {
         return _propsSection.Values
-            .Select(x => x.DeclaringType)
+            .Select(x => x.PropertyType)
             .Where(x => x != null)
             .Select(x => x!);
     }

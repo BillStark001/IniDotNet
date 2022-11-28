@@ -35,4 +35,9 @@ public class HashtableSectionHandler : ISectionHandler
     {
         return _data;
     }
+
+    public (ISectionHandler?, Type) GetSectionHandler(string section)
+    {
+        return (new HashtableSectionHandler(), typeof(Hashtable));
+    }
 }

@@ -16,6 +16,8 @@ public interface ISectionHandler
     public void PutObject(string key, object? value);
 
     public object? End();
+
+    public (ISectionHandler?, Type) GetSectionHandler(string section);
 }
 
 public class InvalidTypeHandler : ISectionHandler
@@ -40,5 +42,10 @@ public class InvalidTypeHandler : ISectionHandler
     public void Start()
     {
         // do nothing
+    }
+
+    public (ISectionHandler?, Type) GetSectionHandler(string section)
+    {
+        throw new InvalidOperationException(Message);
     }
 }

@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using IniDotNet.Integrated;
 using IniDotNet.Model;
 
 namespace IniDotNet.Example
@@ -59,6 +61,20 @@ patty = pattypass ";
             Console.WriteLine("---- Printing contents of the new INI file ----");
             Console.WriteLine(parsedData);
 			Console.WriteLine();
+
+
+            // another mode
+
+            var iniParser = new IniParser();
+
+            iniParser.Configuration.AllowNumberSignComments = true;
+            iniParser.Scheme.AssignFrom(new(parser.Configuration));
+
+            var handler = new IntegratedIniDataHandler(typeof(ConfigModel));
+            iniParser.Parse(new StringReader(testIniFile), handler);
+            var result = (ConfigModel)handler.Data!;
+
+            Console.WriteLine(result);
         }
     }
 }

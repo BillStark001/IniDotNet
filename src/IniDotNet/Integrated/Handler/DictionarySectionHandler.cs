@@ -42,4 +42,9 @@ public class DictionarySectionHandler<T> : ISectionHandler
     {
         return _data;
     }
+
+    public (ISectionHandler?, Type) GetSectionHandler(string section)
+    {
+        return (null, typeof(T));
+    }
 }
