@@ -34,16 +34,32 @@ public static class AttributeUtil
             if (prop.GetCustomAttributes<IniIgnoreAttribute>(inherit).Count() > 0)
                 continue;
 
-            foreach (var a in prop.GetCustomAttributes<IniSectionAttribute>(inherit))
-                if (!string.IsNullOrWhiteSpace(a.Name))
-                    ansSection[a.Name] = prop;
+            foreach (var a in prop.GetCustomAttributes<IniPropertyAttribute>(inherit))
+            {
+                // determing the name
+                var aName = a.Name; // TODO determine trim or not
+                var fieldName = string.IsNullOrEmpty(aName) ? prop.Name : aName;
 
-            foreach (var a in prop.GetCustomAttributes<IniKeyAttribute>(inherit))
-                if (!string.IsNullOrWhiteSpace(a.Name))
-                    ansKey[a.Name] = prop;
+                var isSection = false;
+                if (a.Type == IniType.Section)
+                    isSection = true;
+                else if (a.Type == IniType.Key)
+                    isSection = false;
                 else
-                    ansKey[prop.Name] = prop;
+                {
+                    if (ConversionUtil.IsStringDictionary(prop.PropertyType))
+                        isSection = true;
+                    else if (prop.PropertyType.GetCustomAttribute<IniModelAttribute>() != null)
+                        isSection = true;
+                    // TODO add support of ini data
+                }
 
+                // write record
+                if (isSection)
+                    ansSection[aName] = prop;
+                else
+                    ansKey[aName] = prop;
+            }
             
         }
         return (ansKey, ansSection);
@@ -101,9 +117,11 @@ public static class AttributeUtil
             Dictionary<string, int> paramMap = new();
             for (int i = 0; i < prms.Length; ++i)
             {
-                var pname = prms[i].Name?.ToLower();
-                if (pname == null)
+                var pnameOrig = prms[i].Name;
+                if (pnameOrig == null)
                     continue;
+
+                var pname = pnameOrig.ToLower();
                 var flp = props.Contains(pname);
                 var fli = iniProps.Contains(pname.ToLower());
                 if (flp)

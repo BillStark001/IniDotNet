@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IniDotNet.Integrated;
+namespace IniDotNet.Integrated.Serializer;
 
 
 public interface IIniSerializer<T>

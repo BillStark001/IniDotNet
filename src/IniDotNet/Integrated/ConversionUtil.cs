@@ -1,5 +1,9 @@
-﻿using IniDotNet.Model;
+﻿using IniDotNet.Integrated.Handler;
+using IniDotNet.Integrated.Model;
+using IniDotNet.Integrated.Serializer;
+using IniDotNet.Model;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -16,8 +20,45 @@ using DSSP = Dictionary<(string, string), PropertyInfo>;
 
 public static class ConversionUtil
 {
+    public static bool IsStringDictionary(Type t)
+    {
+        if (!typeof(IDictionary).IsAssignableFrom(t))
+            return false;
 
-    public static IniSerializerRecord? TryGetConverter<T>(Assembly[] assembly)
+        // hashtable
+        if (t.IsEquivalentTo(typeof(Hashtable)))
+            return true;
+
+        if (t.GetGenericTypeDefinition().IsEquivalentTo(typeof(SortedDictionary<int, int>).GetGenericTypeDefinition()))
+            throw new NotImplementedException();
+
+        if (!(t.GetGenericArguments().Length == 2))
+            return false;
+        var args = t.GetGenericArguments();
+        if (!args[0].IsEquivalentTo(typeof(string)))
+            return false;
+
+        return true;
+    }
+
+
+    public static ISectionHandler SelectTypeHandler(TypeRecord record)
+    {
+        if (record.Type.IsEquivalentTo(typeof(Hashtable)))
+            return new HashtableSectionHandler();
+        else if (IsStringDictionary(record.Type))
+        {
+            var dictType = typeof(DictionarySectionHandler<int>)
+                .GetGenericTypeDefinition()
+                .MakeGenericType(new Type[] { record.Type.GetGenericArguments()[1] });
+
+            return (ISectionHandler)dictType.GetConstructors()[0].Invoke(new object?[] { null });
+        }
+        else
+            return new ClassSectionHandler(record);
+    }
+
+    public static SerializerRecord? TryGetConverter<T>(Assembly[] assembly)
     {
         var type = typeof(IIniSerializer<T>);
         var typeT = typeof(T);
@@ -51,7 +92,7 @@ public static class ConversionUtil
     }
 
 
-    public static IniSerializerRecord? TryGetConverterInner<T>(Type cvrtType)
+    public static SerializerRecord? TryGetConverterInner<T>(Type cvrtType)
     {
         // make sure the constructor is available
         foreach (var ctor in cvrtType.GetConstructors())
@@ -59,7 +100,7 @@ public static class ConversionUtil
             if (ctor.GetParameters().Length == 0 && ctor.IsPublic)
             {
                 var cvrt = (IIniSerializer<T>)ctor.Invoke(new object[] { }) ?? throw new InvalidOperationException("Serializer construction failed");
-                var record = new IniSerializerRecord<T>(cvrt, cvrt.Serialize, cvrt.Deserialize);
+                var record = new SerializerRecord<T>(cvrt, cvrt.Serialize, cvrt.Deserialize);
 
                 return record;
             }
@@ -78,14 +119,14 @@ public static class ConversionUtil
         _cvrt2 = typeof(ConversionUtil).GetMethod(nameof(TryGetConverterInner))!;
     }
 
-    public static IniSerializerRecord? TryGetConverterRefl(Type reflType, Assembly[] assembly)
+    public static SerializerRecord? TryGetConverterRefl(Type reflType, Assembly[] assembly)
     {
-        return (IniSerializerRecord?)_cvrt.MakeGenericMethod(new Type[] { reflType }).Invoke(null, new[] { assembly });
+        return (SerializerRecord?)_cvrt.MakeGenericMethod(new Type[] { reflType }).Invoke(null, new[] { assembly });
     }
 
-    public static IniSerializerRecord? TryGetConverterInnerRefl(Type reflType, Type cvrtType)
+    public static SerializerRecord? TryGetConverterInnerRefl(Type reflType, Type cvrtType)
     {
-        return (IniSerializerRecord?)_cvrt2.MakeGenericMethod(new Type[] { reflType }).Invoke(null, new[] { cvrtType });
+        return (SerializerRecord?)_cvrt2.MakeGenericMethod(new Type[] { reflType }).Invoke(null, new[] { cvrtType });
     }
 
 

@@ -112,6 +112,21 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
     }
 
 
+    public void LeaveSection(uint line)
+    {
+        // do nothing
+    }
+
+    public void EnterSubsection(string section, uint line)
+    {
+        throw new InvalidOperationException();
+    }
+
+    public void LeaveSubsection(uint line)
+    {
+        throw new InvalidOperationException();
+    }
+
 
     public void HandleComment(string comment, uint line)
     {

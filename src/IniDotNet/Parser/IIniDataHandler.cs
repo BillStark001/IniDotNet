@@ -21,6 +21,12 @@ public interface IIniDataHandler
 
     public void EnterSection(string section, uint line);
 
+    public void LeaveSection(uint line);
+
+    public void EnterSubsection(string section, uint line);
+
+    public void LeaveSubsection(uint line);
+
     public bool IsSectionEntered(string section, uint line);
 
 }

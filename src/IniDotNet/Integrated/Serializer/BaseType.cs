@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IniDotNet.Integrated.Serializers;
+namespace IniDotNet.Integrated.Serializer;
 
 public class StringSerializer : IIniSerializer<string>
 {

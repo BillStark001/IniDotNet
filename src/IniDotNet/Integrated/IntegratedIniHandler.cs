@@ -1,4 +1,7 @@
 ﻿using IniDotNet.Base;
+using IniDotNet.Exceptions;
+using IniDotNet.Integrated.Handler;
+using IniDotNet.Integrated.Model;
 using IniDotNet.Parser;
 using System;
 using System.Collections.Generic;
@@ -12,155 +15,6 @@ using System.Xml.Linq;
 namespace IniDotNet.Integrated;
 
 
-public class TypeRecord
-{
-    #region Fields
-    readonly Type _t;
-
-    readonly Dictionary<string, PropertyInfo> _propsKey;
-    readonly Dictionary<string, PropertyInfo> _propsSection;
-
-    readonly Dictionary<string, IniSerializerRecord> _serializerRecords;
-
-    readonly bool _isCtorNoParam;
-    readonly int _ctorParamLength;
-    readonly Dictionary<string, int> _ctorParamPos;
-    readonly ConstructorInfo _ctor;
-
-    #endregion
-
-
-    public Type Type => _t;
-
-    public bool HasNoParamConstructor => _isCtorNoParam;
-    public int ConstructorParamLength => _ctorParamLength;
-    public ConstructorInfo Constructor => _ctor;
-
-    public TypeRecord(Type t, bool inherit = true, bool omitIncomplete = true, bool forcePublic = true)
-    {
-        _t = t;
-        _serializerRecords = new();
-
-        (_propsKey, _propsSection) = AttributeUtil.GetTaggedPropertyList(t, inherit);
-        var access = AttributeUtil.IsPropertiesFullyAccessible((_propsKey, _propsSection));
-        if (!access)
-        {
-            var res = AttributeUtil.GetTaggedConstructor(t, (_propsKey, _propsSection), omitIncomplete, forcePublic);
-            if (res.HasValue)
-                (_ctorParamLength, _ctorParamPos, _ctor) = res.Value;
-            else
-                throw new InvalidOperationException("Unsupported type");
-        }
-        else
-        {
-            _ctorParamLength = 0;
-            _ctorParamPos = new();
-            _ctor = AttributeUtil.GetNoParamConstructor(t, forcePublic) ?? throw new InvalidOperationException("Unsupported type");
-        }
-
-        _isCtorNoParam = access;
-        foreach (var (propName, propInfo) in _propsKey)
-        {
-            var cvrtType = propInfo.GetCustomAttribute<IniSerializerAttribute>()?.Type;
-            IniSerializerRecord? cvrt = null;
-            if (cvrtType != null)
-                cvrt = ConversionUtil.TryGetConverterInnerRefl(propInfo.PropertyType, cvrtType);
-            else
-                cvrt = ConversionUtil.TryGetConverterRefl(propInfo.PropertyType, AppDomain.CurrentDomain.GetAssemblies());
-            if (cvrt == null && !omitIncomplete)
-                throw new InvalidOperationException("Incompleted type");
-            if (cvrt != null)
-                _serializerRecords[propName] = cvrt;
-
-        }
-
-    }
-
-    public IEnumerable<Type> GetReferenceTypes()
-    {
-        return _propsSection.Values
-            .Select(x => x.DeclaringType)
-            .Where(x => x != null)
-            .Select(x => x!);
-    }
-
-    public IniSerializerRecord? TryGetSerializer(string name)
-    {
-        return _serializerRecords.TryGetValue(name, out var ret) ? ret : null;
-    }
-
-    public PropertyInfo? TryGetProperty(string name)
-    {
-        var succ = _propsKey.TryGetValue(name, out var ret);
-        if (!succ)
-            succ = _propsSection.TryGetValue(name, out ret);
-        return succ ? ret : null; 
-    }
-
-    public bool IsKeyProperty(string x) => _propsKey.ContainsKey(x);
-    public bool IsSectionProperty(string x) => _propsSection.ContainsKey(x);
-    public int GetConstructorPosition(string x) => _ctorParamPos.TryGetValue(x.ToLower(), out var ret) ? ret : -1;
-
-}
-
-public class SubIniHandler
-{
-    readonly TypeRecord _record;
-
-    public TypeRecord Record => _record;
-
-    object? _data;
-    Dictionary<string, object?> _params;
-
-    public SubIniHandler(TypeRecord record)
-    {
-        _record = record;
-        _params = new();
-    }
-
-    public void Start()
-    {
-        if (_record.HasNoParamConstructor)
-            _data = _record.Constructor.Invoke(new object?[0]);
-        else
-            _params = new();
-    }
-
-    public void Put(string key, string value)
-    {
-        var ser = _record.TryGetSerializer(key);
-        if (ser == null)
-            return;
-
-        var vobj = ser.Deserialize(value);
-        PutObject(key, vobj);
-    }
-
-    public void PutObject(string key, object? value)
-    {
-
-        if (_record.HasNoParamConstructor)
-            _record.TryGetProperty(key)?.SetValue(_data, value);
-        else
-            _params[key] = value;
-    }
-
-    public object? End()
-    {
-        if (_record.HasNoParamConstructor)
-            return _data;
-
-        object?[] ctorParams = new object?[_record.ConstructorParamLength];
-        foreach (var (key, value) in _params)
-        {
-            var pos = _record.GetConstructorPosition(key);
-            if (pos >= 0 && pos < ctorParams.Length)
-                ctorParams[pos] = value;
-        }
-        return _record.Constructor.Invoke(ctorParams);
-
-    }
-}
 
 public class IntegratedIniHandler : IIniDataHandler
 {
@@ -172,14 +26,29 @@ public class IntegratedIniHandler : IIniDataHandler
 
 
     readonly Dictionary<Type, TypeRecord> _records;
+
+
+    readonly Type _baseType;
+    readonly string[] _basePath;
     readonly bool _allowGlobal;
     readonly bool _allowSubsection;
 
 
-    public IntegratedIniHandler(Type baseType, bool allowGlobal = false, bool allowSubsection = false)
+    ISectionHandler? _globalHandler;
+    readonly Stack<(string, ISectionHandler, Type)> _handlers;
+
+    ISectionHandler GetCurrentHandler() => (_handlers.TryPeek(out var res) ? res.Item2 : _globalHandler) ?? throw new InvalidOperationException();
+    Type GetCurrentType() => _handlers.TryPeek(out var res) ? res.Item3 : throw new InvalidOperationException();
+
+    public IntegratedIniHandler(Type baseType, string[]? basePath = null, bool allowGlobal = false, bool allowSubsection = false)
     {
         _data = null;
         _records = new();
+        _handlers = new();
+        _globalHandler = null;
+
+        _baseType = baseType;
+        _basePath = basePath ?? new string[0];
         _allowGlobal = allowGlobal;
         _allowSubsection = allowSubsection;
 
@@ -205,49 +74,79 @@ public class IntegratedIniHandler : IIniDataHandler
 
     public void Start()
     {
-        throw new NotImplementedException();
+        if (_basePath.Length == 0)
+            _globalHandler = ConversionUtil.SelectTypeHandler(_records[_baseType]);
+        else
+            _globalHandler = new HashtableSectionHandler();
+        _data = null;
     }
 
     public void Clear()
     {
         _data = null;
+        _globalHandler = null;
     }
 
     public void End()
     {
-        throw new NotImplementedException();
+        LeaveSection(0xffffffff);
+        _data = GetCurrentHandler().End();
     }
 
 
     public void EnterSection(string section, uint line)
     {
-        throw new NotImplementedException();
+        LeaveSection(line);
+        EnterSubsection(section, line);
     }
 
-    public void LeaveSection(string section, uint line)
+    public void LeaveSection(uint line)
     {
-        throw new NotImplementedException();
+        while (_handlers.Count > 0)
+        {
+            LeaveSubsection(line);
+        }
     }
 
     public bool IsSectionEntered(string section, uint line)
     {
-        throw new NotImplementedException();
+        return false;
+        // discarded
     }
 
     public void HandleComment(string comment, uint line)
     {
-        throw new NotImplementedException();
+        // do nothing at this time
     }
 
     public void HandleMultilineProperty(string? key, string value, uint line)
     {
-        throw new NotImplementedException();
+        // discarded
     }
 
     public void HandleProperty(string key, string value, uint line)
     {
-        throw new NotImplementedException();
+        if (_handlers.Count == 0 && !_allowGlobal)
+            throw new ParsingException($"Invalid global property {key} = {value} encountered at line {line}.", line);
+        GetCurrentHandler().Put(key, value);
     }
 
+    public void EnterSubsection(string section, uint line)
+    {
+        // TODO replace type with hashtable if basepath is not null
+        var record = _records[GetCurrentType()];
+        var sectionProp = record.TryGetProperty(section) ?? throw new NotImplementedException();
+        _handlers.Push((
+            section, 
+            ConversionUtil.SelectTypeHandler(_records[sectionProp.PropertyType]), 
+            sectionProp.PropertyType
+            ));
+        GetCurrentHandler().Start();
+    }
 
+    public void LeaveSubsection(uint line)
+    {
+        var (section, handler, _) = _handlers.Pop();
+        GetCurrentHandler().PutObject(section, handler.End());
+    }
 }

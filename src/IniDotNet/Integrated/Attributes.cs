@@ -4,44 +4,45 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IniDotNet.Integrated.Serializer;
 
 namespace IniDotNet.Integrated;
 
 
+public enum IniType
+{
+    Auto = 0, 
+    Key = 1, 
+    Section = 2, 
+    // Comment = 4
+}
+
+[AttributeUsage(AttributeTargets.Class)]
+public class IniModelAttribute : Attribute
+{
+
+}
+
 
 [AttributeUsage(AttributeTargets.Property)]
-public class IniSectionAttribute : Attribute
+public class IniPropertyAttribute : Attribute
 {
     public string Name { get; set; } = "";
+    public IniType Type { get; set; } = IniType.Auto;
 
-    public IniSectionAttribute()
+    public IniPropertyAttribute()
     {
-        Name = "";
     }
-    public IniSectionAttribute(string name)
+    public IniPropertyAttribute(string name)
     {
         Name = name;
+    }
+    public IniPropertyAttribute(string name, IniType type) : this(name)
+    {
+        Type = type;
     }
 }
 
-[AttributeUsage(AttributeTargets.Property)]
-public class IniKeyAttribute : Attribute
-{
-    public string Name { get; set; } = "";
-    public string Section { get; set; } = "";
-    public IniKeyAttribute()
-    {
-    }
-    public IniKeyAttribute(string name)
-    {
-        Name = name;
-    }
-    public IniKeyAttribute(string name, string sectionName)
-    {
-        Name = name;
-        Section = sectionName;
-    }
-}
 
 [AttributeUsage(AttributeTargets.Property)]
 public class IniIgnoreAttribute : Attribute
