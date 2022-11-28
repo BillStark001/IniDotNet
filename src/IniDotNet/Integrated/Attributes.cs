@@ -28,13 +28,18 @@ public class IniSectionAttribute : Attribute
 public class IniKeyAttribute : Attribute
 {
     public string Name { get; set; } = "";
+    public string Section { get; set; } = "";
     public IniKeyAttribute()
     {
-        Name = "";
     }
     public IniKeyAttribute(string name)
     {
         Name = name;
+    }
+    public IniKeyAttribute(string name, string sectionName)
+    {
+        Name = name;
+        Section = sectionName;
     }
 }
 
@@ -47,13 +52,13 @@ public class IniIgnoreAttribute : Attribute
 }
 
 [AttributeUsage(AttributeTargets.Property)]
-public class IniConverterAttribute : Attribute
+public class IniSerializerAttribute : Attribute
 {
     public Type Type { get; set; }
 
     private static readonly Type IniType = typeof(IIniSerializer<string>).GetGenericTypeDefinition();
 
-    public IniConverterAttribute(Type type)
+    public IniSerializerAttribute(Type type)
     {
         if (!IniType.IsAssignableFrom(type.GetGenericTypeDefinition()))
             throw new InvalidDataException("Invalid type");

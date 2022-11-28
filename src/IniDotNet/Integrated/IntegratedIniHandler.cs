@@ -61,7 +61,7 @@ public class TypeRecord
         _isCtorNoParam = access;
         foreach (var (propName, propInfo) in _propsKey)
         {
-            var cvrtType = propInfo.GetCustomAttribute<IniConverterAttribute>()?.Type;
+            var cvrtType = propInfo.GetCustomAttribute<IniSerializerAttribute>()?.Type;
             IniSerializerRecord? cvrt = null;
             if (cvrtType != null)
                 cvrt = ConversionUtil.TryGetConverterInnerRefl(propInfo.PropertyType, cvrtType);
@@ -172,12 +172,16 @@ public class IntegratedIniHandler : IIniDataHandler
 
 
     readonly Dictionary<Type, TypeRecord> _records;
+    readonly bool _allowGlobal;
+    readonly bool _allowSubsection;
 
 
-    public IntegratedIniHandler(Type baseType, IniParserConfiguration conf, IniScheme? scheme = null)
+    public IntegratedIniHandler(Type baseType, bool allowGlobal = false, bool allowSubsection = false)
     {
         _data = null;
         _records = new();
+        _allowGlobal = allowGlobal;
+        _allowSubsection = allowSubsection;
 
         Queue<Type> _types = new();
         _types.Enqueue(baseType);
@@ -216,6 +220,11 @@ public class IntegratedIniHandler : IIniDataHandler
 
 
     public void EnterSection(string section, uint line)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void LeaveSection(string section, uint line)
     {
         throw new NotImplementedException();
     }

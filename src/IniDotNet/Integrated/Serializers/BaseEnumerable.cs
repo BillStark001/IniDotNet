@@ -1,64 +1,13 @@
-﻿using IniDotNet.Parser;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace IniDotNet.Integrated;
+namespace IniDotNet.Integrated.Serializers;
 
-
-public class StringConverter : IIniSerializer<string>
-{
-    public string? Deserialize(string? value)
-    {
-        return value;
-    }
-
-    public string Serialize(string? value)
-    {
-        return value ?? "";
-    }
-}
-
-public class BoolConverter : IIniSerializer<bool>
-{
-    public bool Deserialize(string? value)
-    {
-        return value?.ToLower().Trim() == "true";
-    }
-
-    public string Serialize(bool value)
-    {
-        return value ? "true" : "false";
-    }
-}
-
-public class IntConverter : IIniSerializer<int>
-{
-    public int Deserialize(string? value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return 0;
-        try
-        {
-            return int.Parse(value);
-        }
-        catch (FormatException)
-        {
-            return 0;
-        }
-    }
-
-    public string Serialize(int value)
-    {
-        return value.ToString();
-    }
-}
-
-
-public static class StringSerializationUtils
+public static class EnumerableSerializationUtils
 {
 
 
@@ -76,17 +25,25 @@ public static class StringSerializationUtils
 
 public class StringEnumerableConverter : IIniSerializer<IEnumerable<string>>
 {
-
-    private static Regex CommaRegex = new Regex(@", *");
-
+    public static readonly Regex StringCommaRegex = new(@"(?<=[^,])(?:,,)*(,)");
 
     public IEnumerable<string> Deserialize(string? value)
     {
         if (value == null)
             return Enumerable.Empty<string>();
 
-        var values = CommaRegex.Split(value);
-        return values.Select(x => x.RestoreIniEscapedString());
+        List<string> ans = new();
+
+        var values = StringCommaRegex.Matches(value);
+        int lastStart = 0;
+        for (int i = 0; i <= values.Count; ++i)
+        {
+            var end = i == values.Count ? value.Length : values[i].Groups[1].Index;
+            ans.Add(value.Substring(lastStart, end - lastStart).RestoreIniEscapedString());
+            lastStart = i == values.Count ? end : values[i].Groups[1].Index + values[i].Groups[1].Length;
+        }
+
+        return ans.AsReadOnly();
     }
 
     public string Serialize(IEnumerable<string>? values)
@@ -105,6 +62,7 @@ public class StringEnumerableConverter : IIniSerializer<IEnumerable<string>>
         return sb.ToString();
     }
 }
+
 
 public class StringArrayConverter : IIniSerializer<string[]>
 {
