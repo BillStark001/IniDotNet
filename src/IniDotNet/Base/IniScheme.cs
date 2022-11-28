@@ -24,6 +24,7 @@ public class IniScheme : IDeepCloneable<IniScheme>
     public static readonly Regex InlineCommentPatternNumberSignEscape = new($@"{NoOddNumberBackslash}(;|#)(.*)$");
 
     public static readonly Regex SectionPatternDefault = new(@"^ *\[(.*)\]");
+    public static readonly Regex SubsectionPatternDefault = new(@"(\.)");
 
     public static readonly Regex KeyValueSeparatorPatternDefault = new(@"(=)");
     public static readonly Regex KeyValueSeparatorPatternEscape = new($@"{NoOddNumberBackslash}(=)");
@@ -74,7 +75,7 @@ public class IniScheme : IDeepCloneable<IniScheme>
         )
     {
 
-    } 
+    }
 
     public IniScheme(bool numberSignComment, bool escapeCharacters, bool colonSeparator)
     {
@@ -117,6 +118,7 @@ public class IniScheme : IDeepCloneable<IniScheme>
         InlineCommentPattern = ori.InlineCommentPattern;
         KeyValueSeparatorPattern = ori.KeyValueSeparatorPattern;
         SectionPattern = ori.SectionPattern;
+        SubsectionPattern = ori.SubsectionPattern;
         MultilineIndicatorPattern = ori.MultilineIndicatorPattern;
     }
 
@@ -137,7 +139,7 @@ public class IniScheme : IDeepCloneable<IniScheme>
         get => _inlineComment ?? InlineCommentPatternDefault;
         set => _inlineComment = value;
     }
-    
+
     /// <summary>
     /// TODO 1
     /// </summary>
@@ -146,7 +148,7 @@ public class IniScheme : IDeepCloneable<IniScheme>
         get => _keyValue ?? KeyValueSeparatorPatternDefault;
         set => _keyValue = value;
     }
-    
+
     /// <summary>
     /// TODO 1
     /// </summary>
@@ -155,7 +157,16 @@ public class IniScheme : IDeepCloneable<IniScheme>
         get => _section ?? SectionPatternDefault;
         set => _section = value;
     }
-    
+
+    /// <summary>
+    /// TODO 1
+    /// </summary>
+    public Regex SubsectionPattern
+    {
+        get => _subsection ?? SubsectionPatternDefault;
+        set => _subsection = value;
+    }
+
     /// <summary>
     /// TODO 1
     /// </summary>
@@ -165,11 +176,30 @@ public class IniScheme : IDeepCloneable<IniScheme>
         set => _multiline = value;
     }
 
+
+    #region Fields
+
     public Regex? _comment;
     public Regex? _inlineComment;
     public Regex? _keyValue;
     public Regex? _section;
+    public Regex? _subsection;
     public Regex? _multiline;
+
+    #endregion
+
+    #region IDeepCloneable<T> Members
+    /// <summary>
+    ///     Creates a new object that is a copy of the current instance.
+    /// </summary>
+    /// <returns>
+    ///     A new object that is a copy of this instance.
+    /// </returns>
+    public IniScheme DeepClone()
+    {
+        return new IniScheme(this);
+    }
+    #endregion
 
 
     #region Old Definitions
@@ -233,20 +263,7 @@ public class IniScheme : IDeepCloneable<IniScheme>
 
     #endregion
 
-    #region IDeepCloneable<T> Members
-    /// <summary>
-    ///     Creates a new object that is a copy of the current instance.
-    /// </summary>
-    /// <returns>
-    ///     A new object that is a copy of this instance.
-    /// </returns>
-    public IniScheme DeepClone()
-    {
-        return new IniScheme(this);
-    }
-    #endregion
-
-    #region Fields
+    #region Old Fields
     string? _commentString = ";";
     string? _sectionStartString = "[";
     string? _sectionEndString = "]";
