@@ -47,17 +47,23 @@ public static class ConversionUtil
             return null;
         var type1 = types.First();
 
+        return TryGetConverterInner<T>(type1);
+    }
+
+
+    public static IniSerializerRecord? TryGetConverterInner<T>(Type cvrtType)
+    {
         // make sure the constructor is available
-        foreach (var ctor in type1.GetConstructors())
+        foreach (var ctor in cvrtType.GetConstructors())
         {
             if (ctor.GetParameters().Length == 0 && ctor.IsPublic)
             {
-                var instance = (IIniSerializer<T>)ctor.Invoke(new object[] { }) ?? throw new InvalidOperationException("Construction failed");
-                var record = new IniSerializerRecord<T>(instance, instance.Serialize, instance.Deserialize);
+                var cvrt = (IIniSerializer<T>)ctor.Invoke(new object[] { }) ?? throw new InvalidOperationException("Serializer construction failed");
+                var record = new IniSerializerRecord<T>(cvrt, cvrt.Serialize, cvrt.Deserialize);
 
                 return record;
             }
-                
+
         }
         // throw new InvalidOperationException($"No possible converter found for type {typeof(T).FullName}.");
         return null;
@@ -65,25 +71,22 @@ public static class ConversionUtil
 
 
     private static readonly MethodInfo _cvrt;
+    private static readonly MethodInfo _cvrt2;
     static ConversionUtil()
     {
         _cvrt = typeof(ConversionUtil).GetMethod(nameof(TryGetConverter))!;
+        _cvrt2 = typeof(ConversionUtil).GetMethod(nameof(TryGetConverterInner))!;
     }
 
-    public static IniSerializerRecord? TryGetConverter(Assembly[] assembly, Type t)
+    public static IniSerializerRecord? TryGetConverterRefl(Type reflType, Assembly[] assembly)
     {
-        return (IniSerializerRecord?)_cvrt.MakeGenericMethod(new Type[] { t }).Invoke(null, new[] { assembly });
+        return (IniSerializerRecord?)_cvrt.MakeGenericMethod(new Type[] { reflType }).Invoke(null, new[] { assembly });
     }
 
-    public static string GetIniEscapedString(this string strIn)
+    public static IniSerializerRecord? TryGetConverterInnerRefl(Type reflType, Type cvrtType)
     {
-        return strIn.Replace(",", ",,");
+        return (IniSerializerRecord?)_cvrt2.MakeGenericMethod(new Type[] { reflType }).Invoke(null, new[] { cvrtType });
     }
 
-
-    public static string RestoreIniEscapedString(this string strIn)
-    {
-        return strIn.Replace(",,", ",");
-    }
 
 }

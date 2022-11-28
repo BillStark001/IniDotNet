@@ -58,11 +58,27 @@ public class IntConverter : IIniSerializer<int>
 }
 
 
+public static class StringSerializationUtils
+{
+
+
+    public static string GetIniEscapedString(this string strIn)
+    {
+        return strIn.Replace(",", ",,");
+    }
+
+
+    public static string RestoreIniEscapedString(this string strIn)
+    {
+        return strIn.Replace(",,", ",");
+    }
+}
 
 public class StringEnumerableConverter : IIniSerializer<IEnumerable<string>>
 {
 
     private static Regex CommaRegex = new Regex(@", *");
+
 
     public IEnumerable<string> Deserialize(string? value)
     {
