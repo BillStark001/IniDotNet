@@ -1,5 +1,5 @@
-﻿using IniDotNet.Model;
-using IniDotNet.Parser;
+﻿using IniDotNet.Base;
+using IniDotNet.Linq;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Configuration
@@ -49,7 +49,7 @@ name = Marble Zone
             _parser.Scheme.CommentPattern = new(@"^ *(#)(.*)");
 
             _parser.Configuration.AllowKeysWithoutSection = true;
-            _parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue;
+            _parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfig.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue;
             _parser.Configuration.AllowDuplicateSections = true;
             _parser.Configuration.ThrowExceptionsOnError = false;
             _parser.Configuration.SkipInvalidLines = true;
@@ -89,7 +89,7 @@ name = Marble Zone
         [Test]
         public void parse_ini_with_new_configuration()
         {
-            IniData data = _parser.Parse(iniFileStr);
+            IniObject data = _parser.Parse(iniFileStr);
             Assert.That(data, Is.Not.Null);
 
             Assert.That(data.Sections.Count, Is.EqualTo(2));
@@ -116,7 +116,7 @@ name = Marble Zone
         [Test, Ignore("no writing")]
         public void check_ini_writing()
         {
-            //IniData data = new IniDataParser(new LiberalTestConfiguration()).Parse(iniFileStr);
+            //IniObject data = new IniDataParser(new LiberalTestConfiguration()).Parse(iniFileStr);
 
             //Assert.That(
             //    data.ToString().Replace(Environment.NewLine, string.Empty), 
@@ -126,7 +126,7 @@ name = Marble Zone
         [Test, Ignore("no writing")]
         public void check_new_line_config_on_ini_writing()
         {
-            //IniData data = new IniDataParser(new LiberalTestConfiguration()).Parse(iniFileStr);
+            //IniObject data = new IniDataParser(new LiberalTestConfiguration()).Parse(iniFileStr);
 
             //data.Scheme.NewLineStr = "^_^";
 
@@ -138,7 +138,7 @@ name = Marble Zone
         [Test]
         public void comment_string_with_special_characters()
         {
-            var iniStr = @"[Section]
+            var iniStr = @"[IniSection]
                 \Backslash Bcomment
                 Key=Value";
          

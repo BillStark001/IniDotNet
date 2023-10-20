@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
-using IniDotNet.Model;
-using IniDotNet.Parser;
 using IniDotNet.Base;
+using IniDotNet.Linq;
 
 namespace IniDotNet.Tests.Unit.Parser
 {
@@ -27,7 +26,7 @@ mykey1 = value1
         public void parse_ini_string_with_default_configuration()
         {
             var parser = new IniDataParser();
-            IniData data = parser.Parse(iniFileStr);
+            IniObject data = parser.Parse(iniFileStr);
 
             Assert.That(data, Is.Not.Null);
             Assert.That(data.Sections.Count, Is.EqualTo(2));
@@ -71,7 +70,7 @@ mykey1 = value1
             parser.Scheme.CommentPattern = new(@"^ *(#)(.*)");
             parser.Scheme.SectionPattern = new(@"^ *<(.*)>");
 
-            IniData data = parser.Parse(iniFileStrCustom);
+            IniObject data = parser.Parse(iniFileStrCustom);
 
             Assert.That(data, Is.Not.Null);
             Assert.That(data.Sections.Count, Is.EqualTo(2));
@@ -95,7 +94,7 @@ mykey1 = value1
         {
             string strTest = "[section_issue.3]\nkey.with_dots = value\n";
 
-            IniData data = new IniDataParser().Parse(strTest);
+            IniObject data = new IniDataParser().Parse(strTest);
 
             Assert.That(data.Sections.Count, Is.EqualTo(1));
             Assert.That(data.Sections["section_issue.3"]["key.with_dots"], Is.Not.Null);
@@ -116,9 +115,9 @@ value1 = 10";
 
             var parser = new IniDataParser();
 
-            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue;
+            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfig.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue;
 
-            IniData data = parser.Parse(ini_duplicated_keys);
+            IniObject data = parser.Parse(ini_duplicated_keys);
 
             Assert.That(data, Is.Not.Null);
             Assert.That(data.Sections.FindByName("seccion1").Properties.Count, Is.EqualTo(1));
@@ -137,7 +136,7 @@ connectionString = Server=sqlserver.domain.com;Database=main;User ID=user;Passwo
             var parser = new IniDataParser();
             // parser.Scheme.CommentString = "#";
             parser.Scheme.CommentPattern = new(@"^ *(#)(.*)");
-            IniData iniData = parser.Parse(data);
+            IniObject iniData = parser.Parse(data);
 
             Assert.That(
                 iniData["test"]["connectionString"],
@@ -169,7 +168,7 @@ key3=value3";
 
             var parser = new IniDataParser();
 
-            IniData iniData = parser.Parse(data);
+            IniObject iniData = parser.Parse(data);
 
             Assert.That(iniData.Global.Count, Is.EqualTo(3));
             Assert.That(iniData.Global["key1"], Is.EqualTo("value1"));
@@ -192,7 +191,7 @@ key2 = value5";
 
             var parser = new IniDataParser();
 
-            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue;
+            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfig.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue;
             parser.Configuration.AllowDuplicateSections = true;
             parser.Configuration.AllowKeysWithoutSection = true;
 
@@ -215,7 +214,7 @@ key = value";
 
             var parser = new IniDataParser();
 
-            IniData iniData = parser.Parse(data);
+            IniObject iniData = parser.Parse(data);
 
             Assert.That(iniData.Sections.Count, Is.EqualTo(1));
             Assert.That(iniData.Sections.Contains("{E3729302-74D1-11D3-B43A-00AA00CAD128}"), Is.True);
@@ -232,7 +231,7 @@ key = value";
 
             var parser = new IniDataParser();
 
-            IniData iniData = parser.Parse(data);
+            IniObject iniData = parser.Parse(data);
 
             Assert.That(iniData.Sections.Count, Is.EqualTo(1));
             Assert.That(iniData.Sections.Contains("Web Colaboration"), Is.True);
@@ -263,7 +262,7 @@ key1 = value1
 
             parser.Configuration.SkipInvalidLines = true;
 
-            IniData newData = parser.Parse(data);
+            IniObject newData = parser.Parse(data);
 
             Assert.That(newData.Global["key1"], Is.EqualTo("value1"));
         }
@@ -276,7 +275,7 @@ key1 = value1
 key=value";
             IniDataParser parser = new IniDataParser();
 
-            IniData parsedData = parser.Parse(data);
+            IniObject parsedData = parser.Parse(data);
 
             Assert.That(parsedData.Sections.Contains("section\\subsection"));
             Assert.That(parsedData.Sections["section\\subsection"]["key"], Is.EqualTo("value"));
@@ -290,7 +289,7 @@ key=value";
 key=value";
             IniDataParser parser = new IniDataParser();
 
-            IniData parsedData = parser.Parse(data);
+            IniObject parsedData = parser.Parse(data);
 
             Assert.That(parsedData.Sections.Contains("section~subsection"));
             Assert.That(parsedData.Sections["section~subsection"]["key"], Is.EqualTo("value"));
@@ -480,7 +479,7 @@ Run=http://192.168.1.88:8139/getsms.aspx?SENDER=@@SENDER@@&FULLSMS=@@FULLSMS@@&S
             var parser = new IniDataParser();
 
             parser.Configuration.ThrowExceptionsOnError = false;
-            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfiguration.EDuplicatePropertiesBehaviour.DisallowAndStopWithError;
+            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfig.EDuplicatePropertiesBehaviour.DisallowAndStopWithError;
 
             var result = parser.Parse(iniDataString);
 
@@ -499,7 +498,7 @@ Run=http://192.168.1.88:8139/getsms.aspx?SENDER=@@SENDER@@&FULLSMS=@@FULLSMS@@&S
 key = value
 [W103 0.5' wc]
 key2 = value2";
-			IniData parsedData = parser.Parse(iniDataString);
+			IniObject parsedData = parser.Parse(iniDataString);
 
 			Assert.That(parsedData.Sections["W101 0.5\" wc"], Is.Not.Empty);
 			Assert.That(parsedData.Sections["W103 0.5' wc"], Is.Not.Empty);

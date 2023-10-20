@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using IniDotNet.Util;
 
 namespace IniDotNet.Integrated.Model;
 
@@ -36,7 +37,7 @@ public class TypeRecord
         _t = t;
         _serializerRecords = new();
 
-        if (!ConversionUtil.IsStringDictionary(t))
+        if (!ConvertUtil.IsStringDictionary(t))
         {
 
             (_propsKey, _propsSection) = AttributeUtil.GetTaggedPropertyList(t, inherit);
@@ -62,9 +63,9 @@ public class TypeRecord
                 var cvrtType = propInfo.GetCustomAttribute<IniSerializerAttribute>()?.Type;
                 SerializerRecord? cvrt = null;
                 if (cvrtType != null)
-                    cvrt = ConversionUtil.TryGetConverterInnerRefl(propInfo.PropertyType, cvrtType);
+                    cvrt = ConvertUtil.TryGetConverterInnerRefl(propInfo.PropertyType, cvrtType);
                 else
-                    cvrt = ConversionUtil.TryGetConverterRefl(propInfo.PropertyType, AppDomain.CurrentDomain.GetAssemblies());
+                    cvrt = ConvertUtil.TryGetConverterRefl(propInfo.PropertyType, AppDomain.CurrentDomain.GetAssemblies());
                 if (cvrt == null && !omitIncomplete)
                     throw new InvalidOperationException("Incompleted type");
                 if (cvrt != null)

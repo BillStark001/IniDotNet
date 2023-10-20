@@ -1,13 +1,12 @@
-﻿using IniDotNet.Base;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IniDotNet.Parser;
+namespace IniDotNet.Base;
 
-public interface IIniDataHandler
+public interface IIniHandler
 {
     public void Clear();
     public void Start();
@@ -30,7 +29,7 @@ public interface IIniDataHandler
 
 }
 
-public interface IIniDataHandler<T> : IIniDataHandler
+public interface IIniHandler<T> : IIniHandler
 {
     public T Get();
 }

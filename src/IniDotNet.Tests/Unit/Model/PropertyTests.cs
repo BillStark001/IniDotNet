@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using IniDotNet.Model;
+using IniDotNet.Linq;
+using IniDotNet.Linq;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Model
@@ -11,7 +12,7 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_default_values()
         {
-            var property = new Property("key_name");
+            var property = new IniProperty("key_name");
 
             Assert.That(property, Is.Not.Null);
             Assert.That(property.Key, Is.EqualTo("key_name"));
@@ -22,7 +23,7 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_create_property_with_invalid_name_throws()
         {
-            Assert.Throws(typeof(ArgumentException), () => new Property(""));
+            Assert.Throws(typeof(ArgumentException), () => new IniProperty(""));
         }
 
         [Test]
@@ -33,7 +34,7 @@ namespace IniDotNet.Tests.Unit.Model
             var commentListTest = new List<string>(new string[] { "testComment 1", "testComment 2" });
 
             //Create a key data
-            Property property = new Property(strKeyTest);
+            IniProperty property = new IniProperty(strKeyTest);
             property.Value = strValueTest;
             property.Comments = commentListTest;
             
@@ -55,11 +56,11 @@ namespace IniDotNet.Tests.Unit.Model
             var commentListTest = new List<string>(new string[] { "testComment 1", "testComment 2" });
 
             //Create a key data
-            Property property = new Property(strKeyTest);
+            IniProperty property = new IniProperty(strKeyTest);
             property.Value = strValueTest;
             property.Comments = commentListTest;
 
-            Property propertyCopy = property.DeepClone();
+            IniProperty propertyCopy = property.DeepClone();
 
             //Assert not null and empty
             Assert.That(propertyCopy, Is.Not.Null);
@@ -73,12 +74,12 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_merge_properties()
         {
-            var properties1 = new PropertyCollection();
+            var properties1 = new IniPropertyCollection();
             properties1.Add( "key1", "value1");
             properties1.Add( "key2", "value2");
             properties1.Add( "key3", "value3");
 
-            var properties2 = new PropertyCollection();
+            var properties2 = new IniPropertyCollection();
             properties2.Add("key1", "value11");
             properties2.Add("key4", "value4");
 

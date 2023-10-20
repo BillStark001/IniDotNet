@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using IniDotNet.Parser;
-using IniDotNet.Model;
 using IniDotNet.Base;
 using System.Text;
+using IniDotNet.Util;
+using IniDotNet.Linq;
 
 namespace IniDotNet
 {
     /// <summary>
 	/// 	Responsible for parsing an string from an ini file, and creating
-	/// 	an <see cref="IniData"/> structure.
+	/// 	an <see cref="IniObject"/> structure.
 	/// </summary>
-    public class IniParser
+    public class IniParser: IIniParser
     {
         #region Initialization
         /// <summary>
@@ -21,7 +21,7 @@ namespace IniDotNet
         /// </summary>
         public IniParser()
         {
-            Configuration = new IniParserConfiguration();
+            Configuration = new IniParserConfig();
             Scheme = new(Configuration);
             _errorExceptions = new List<Exception>();
             _multiLineCache = new StringBuilder();
@@ -31,7 +31,7 @@ namespace IniDotNet
 
         #region State
 
-        public virtual IniParserConfiguration Configuration { get; protected set; }
+        public virtual IniParserConfig Configuration { get; protected set; }
 
         /// <summary>
         ///     Scheme that defines the structure for the ini file to be parsed
@@ -66,21 +66,8 @@ namespace IniDotNet
             _errorExceptions.Clear();
             _currentLineNumber = 0;
         }
-
-        /// <summary>
-        ///     Parses a string containing valid ini data
-        /// </summary>
-        /// <param name="textReader">
-        ///     Text reader for the source string contaninig the ini data
-        /// </param>
-        /// <returns>
-        ///     An <see cref="IniData"/> instance containing the data readed
-        ///     from the source
-        /// </returns>
-        /// <exception cref="ParsingException">
-        ///     Thrown if the data could not be parsed
-        /// </exception>       
-        public void Parse(TextReader textReader, IIniDataHandler iniData)
+     
+        public void Parse(TextReader textReader, IIniHandler iniData)
         {
             Reset();
             iniData.Clear();
@@ -146,11 +133,11 @@ namespace IniDotNet
         ///     (section or key/value pair who may or may not have comments)
         /// </summary>
         protected virtual void ProcessLine(string currentLine,
-                                           IIniDataHandler iniData)
+                                           IIniHandler iniData)
         {
             if (string.IsNullOrWhiteSpace(currentLine)) return;
 
-            // TODO: change this to a global (IniData level) array of comments
+            // TODO: change this to a global (IniObject level) array of comments
             // Extract comments from current line and store them in a tmp list
 
             if (ProcessComment(currentLine, iniData))
@@ -187,7 +174,7 @@ namespace IniDotNet
                                        currentLine);
         }
 
-        protected virtual bool ProcessInlineComment(in string currentLine, IIniDataHandler iniData, out string currentLineWithoutComment)
+        protected virtual bool ProcessInlineComment(in string currentLine, IIniHandler iniData, out string currentLineWithoutComment)
         {
             currentLineWithoutComment = "";
             if (!Configuration.AllowInlineComments)
@@ -211,7 +198,7 @@ namespace IniDotNet
             return true;
         }
 
-        protected virtual bool ProcessComment(in string currentLine, IIniDataHandler iniData)
+        protected virtual bool ProcessComment(in string currentLine, IIniHandler iniData)
         {
             // Line is  med when it came here, so we only need to check if
             // the first characters are those of the comments
@@ -238,7 +225,7 @@ namespace IniDotNet
         /// <param name="currentLine">
         ///     The string to be processed
         /// </param>
-        protected virtual bool ProcessSection(in string currentLine, IIniDataHandler iniData)
+        protected virtual bool ProcessSection(in string currentLine, IIniHandler iniData)
         {
             var matchRes = Scheme.SectionPattern.Match(currentLine);
             if (!matchRes.Success)
@@ -282,7 +269,7 @@ namespace IniDotNet
             return true;
         }
 
-        protected virtual bool ProcessProperty(in string currentLine, IIniDataHandler iniData)
+        protected virtual bool ProcessProperty(in string currentLine, IIniHandler iniData)
         {
             var matchRes = Scheme.KeyValueSeparatorPattern.Match(currentLine);
             if (!matchRes.Success)
@@ -315,8 +302,8 @@ namespace IniDotNet
 
             if (Configuration.UseEscapeCharacters)
             {
-                key = EscapeCharacterUtil.ParseValue(key);
-                value = EscapeCharacterUtil.ParseValue(value);
+                key = StringUtil.ParseValue(key);
+                value = StringUtil.ParseValue(value);
             }
 
             if (string.IsNullOrEmpty(key))
@@ -357,7 +344,7 @@ namespace IniDotNet
         /// <param name="iniData"></param>
         /// <returns></returns>
 
-        protected virtual bool ProcessStoredMultilineProperty(string? currentLine, IIniDataHandler iniData)
+        protected virtual bool ProcessStoredMultilineProperty(string? currentLine, IIniHandler iniData)
         {
             if (!Configuration.AllowMultilineProperties)
                 return false;
@@ -378,7 +365,7 @@ namespace IniDotNet
             return true;
         }
 
-        protected virtual bool ProcessMultilineProperty(in string currentLine, IIniDataHandler iniData)
+        protected virtual bool ProcessMultilineProperty(in string currentLine, IIniHandler iniData)
         {
             if (!Configuration.AllowMultilineProperties)
                 return false;
@@ -393,7 +380,7 @@ namespace IniDotNet
             var value = currentLine.Substring(0, multiRes.Groups[1].Index);
 
             if (Configuration.UseEscapeCharacters)
-                value = EscapeCharacterUtil.ParseValue(value);
+                value = StringUtil.ParseValue(value);
 
             _multiLineCache.Append(value);
 

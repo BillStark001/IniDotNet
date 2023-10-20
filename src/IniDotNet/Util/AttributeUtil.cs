@@ -5,8 +5,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using IniDotNet.Integrated;
 
-namespace IniDotNet.Integrated;
+namespace IniDotNet.Util;
 
 using DSP = Dictionary<string, PropertyInfo>;
 
@@ -24,7 +25,7 @@ public static class AttributeUtil
     }
 
     public static (DSP, DSP) GetTaggedPropertyList(
-        Type type, 
+        Type type,
         bool inherit = true)
     {
         DSP ansKey = new();
@@ -51,7 +52,7 @@ public static class AttributeUtil
                     isSection = false;
                 else
                 {
-                    if (ConversionUtil.IsStringDictionary(prop.PropertyType))
+                    if (ConvertUtil.IsStringDictionary(prop.PropertyType))
                         isSection = true;
                     else if (prop.PropertyType.GetCustomAttribute<IniModelAttribute>() != null)
                         isSection = true;
@@ -68,7 +69,7 @@ public static class AttributeUtil
             if (!processFlag)
             {
                 var isSection = false;
-                if (ConversionUtil.IsStringDictionary(prop.PropertyType))
+                if (ConvertUtil.IsStringDictionary(prop.PropertyType))
                     isSection = true;
                 else if (prop.PropertyType.GetCustomAttribute<IniModelAttribute>() != null)
                     isSection = true;
@@ -77,7 +78,7 @@ public static class AttributeUtil
                 else
                     ansKey[prop.Name] = prop;
             }
-            
+
         }
         return (ansKey, ansSection);
     }
@@ -91,7 +92,7 @@ public static class AttributeUtil
     }
 
     public static ConstructorInfo? GetNoParamConstructor(
-        Type type, 
+        Type type,
         bool forcePublic = true)
     {
         foreach (var ctor in type.GetConstructors().OrderByDescending(x => x.IsPublic))
@@ -102,9 +103,9 @@ public static class AttributeUtil
     }
 
     public static (int, Dictionary<string, int>, ConstructorInfo)? GetTaggedConstructor(
-        Type type, 
-        (DSP, DSP)? properties = null, 
-        bool omitIncompleteConstructors = true, 
+        Type type,
+        (DSP, DSP)? properties = null,
+        bool omitIncompleteConstructors = true,
         bool forcePublic = true)
     {
         properties = properties ?? GetTaggedPropertyList(type);
@@ -159,13 +160,13 @@ public static class AttributeUtil
                 }
                 else if (omitIncompleteConstructors)
                     continue;
-                    
+
             }
 
             // if no continue is triggered, this constructor is available
             if (!forcePublic || ctor.IsPublic)
                 return (prms.Length, paramMap, ctor);
-                
+
         }
 
         return null;

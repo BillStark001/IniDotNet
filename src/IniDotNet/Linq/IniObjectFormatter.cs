@@ -1,14 +1,12 @@
 using System.Collections.Generic;
 using System.Text;
-using IniDotNet.Model;
-using IniDotNet.Format;
 using IniDotNet.Base;
 
-namespace IniDotNet
+namespace IniDotNet.Linq
 {
-    public class IniDataFormatter : IIniDataFormatter
+    public class IniObjectFormatter : IIniFormatter<IniObject>
     {
-        public string Format(IniData iniData, IniFormattingConfiguration format)
+        public string Format(IniObject iniData, IniFormatterConfig format)
         {
             var sb = new StringBuilder();
 
@@ -23,7 +21,7 @@ namespace IniDotNet
             }
 
             var newLineLength = format.NewLineString.Length;
-            
+
             // Remove the last new line
             sb.Remove(sb.Length - newLineLength, newLineLength);
 
@@ -32,10 +30,10 @@ namespace IniDotNet
 
         #region Template Method Design Pattern
 
-        protected virtual void WriteSection(Section section,
+        protected virtual void WriteSection(IniSection section,
                                             StringBuilder sb,
                                             IniScheme scheme,
-                                            IniFormattingConfiguration format)
+                                            IniFormatterConfig format)
         {
             // Comments
             WriteComments(section.Comments, sb, scheme, format);
@@ -57,12 +55,12 @@ namespace IniDotNet
             WriteProperties(section.Properties, sb, scheme, format);
         }
 
-        protected virtual void WriteProperties(PropertyCollection properties,
+        protected virtual void WriteProperties(IniPropertyCollection properties,
                                                StringBuilder sb,
                                                IniScheme scheme,
-                                               IniFormattingConfiguration format)
+                                               IniFormatterConfig format)
         {
-            foreach (Property property in properties)
+            foreach (IniProperty property in properties)
             {
                 // Write comments
                 WriteComments(property.Comments, sb, scheme, format);
@@ -85,7 +83,7 @@ namespace IniDotNet
         protected virtual void WriteComments(List<string> comments,
                                              StringBuilder sb,
                                              IniScheme scheme,
-                                             IniFormattingConfiguration format)
+                                             IniFormatterConfig format)
         {
             foreach (string comment in comments)
             {

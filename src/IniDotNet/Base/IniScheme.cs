@@ -1,13 +1,11 @@
-﻿using IniDotNet.Model;
-using IniDotNet.Parser;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace IniDotNet.Base;
 
 /// <summary>
 /// This structure defines the format of the INI file by customization the characters used to define sections
 /// key/values or comments.
-/// Used IniDataParser to read INI files, and an IIniDataFormatter to write a new ini file string.
+/// Used IniDataParser to read INI files, and an IIniFormatter to write a new ini file string.
 /// </summary>
 public class IniScheme : IDeepCloneable<IniScheme>
 {
@@ -68,7 +66,7 @@ public class IniScheme : IDeepCloneable<IniScheme>
 
     }
 
-    public IniScheme(IniParserConfiguration conf) : this(
+    public IniScheme(IniParserConfig conf) : this(
         conf.AllowNumberSignComments,
         conf.UseEscapeCharacters,
         conf.UseColonSeparator

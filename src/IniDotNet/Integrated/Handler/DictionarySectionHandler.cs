@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IniDotNet.Integrated.Model;
+using IniDotNet.Util;
 
 namespace IniDotNet.Integrated.Handler;
 
@@ -14,7 +15,7 @@ public class DictionarySectionHandler<T> : ISectionHandler
     public DictionarySectionHandler(SerializerRecord? serializer = null)
     {
         _serializer = serializer ??
-            ConversionUtil.TryGetConverter<T>(AppDomain.CurrentDomain.GetAssemblies()) ??
+            ConvertUtil.TryGetConverter<T>(AppDomain.CurrentDomain.GetAssemblies()) ??
             throw new InvalidOperationException("Unsupported type");
     }
 

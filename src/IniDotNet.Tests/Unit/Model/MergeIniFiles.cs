@@ -1,5 +1,5 @@
 using System;
-using IniDotNet.Model;
+using IniDotNet.Linq;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Model
@@ -10,7 +10,7 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void merge_programatically_created_ini_files()
         {
-			var iniData = new IniData();
+			var iniData = new IniObject();
 			iniData.Global.Add("UseSeparateRepositoryForAssets", true.ToString());
 
 			iniData.Sections.Add("MainRepository");
@@ -57,9 +57,9 @@ c = 55
         {
             var parser = new IniDataParser();
 
-            IniData dataA = parser.Parse(iniFileStrA);
+            IniObject dataA = parser.Parse(iniFileStrA);
 
-            IniData dataB = parser.Parse(iniFileStrB);
+            IniObject dataB = parser.Parse(iniFileStrB);
 
             dataA.Merge(dataB);
 

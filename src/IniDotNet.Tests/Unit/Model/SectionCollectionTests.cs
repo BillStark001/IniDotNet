@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using IniDotNet.Model;
+using IniDotNet.Linq;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Model
@@ -16,7 +16,7 @@ namespace IniDotNet.Tests.Unit.Model
 
 
             //Creation
-            SectionCollection sdc = new SectionCollection();
+            IniSectionCollection sdc = new IniSectionCollection();
             Assert.That(sdc, Is.Empty);
 
             //Add sectoin
@@ -53,7 +53,7 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_remove_all_keys_in_section_without_deleting_the_section()
         {
-            IniData data = new IniData();
+            IniObject data = new IniObject();
             data.Sections.Add("test");
             data.Sections.Add("test2");
 
@@ -83,9 +83,9 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_adding_sections_to_collection()
         {
-            var col = new SectionCollection();
+            var col = new IniSectionCollection();
 
-            var exampleSection = new Section("section1");
+            var exampleSection = new IniSection("section1");
             exampleSection.Properties.Add("examplekey");
             exampleSection.Properties["examplekey"] = "examplevalue";
 
@@ -103,7 +103,7 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_deep_clone()
         {
-            var ori = new SectionCollection();
+            var ori = new IniSectionCollection();
             ori.Add("section1");
             ori["section1"]["key1"] = "value1";
 

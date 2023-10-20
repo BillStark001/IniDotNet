@@ -1,7 +1,7 @@
 ﻿using IniDotNet.Base;
 using IniDotNet.Integrated.Handler;
 using IniDotNet.Integrated.Model;
-using IniDotNet.Parser;
+using IniDotNet.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace IniDotNet.Integrated;
 
 
 
-public class IntegratedIniDataHandler : IIniDataHandler
+public class IntegratedIniHandler : IIniHandler
 {
 
     public const int MAX_SEARCH_DEPTH = 114514;
@@ -41,7 +41,7 @@ public class IntegratedIniDataHandler : IIniDataHandler
     ISectionHandler GetCurrentHandler() => (_handlers.TryPeek(out var res) ? res.Item2 : _globalHandler) ?? throw new InvalidOperationException();
     Type GetCurrentType() => _handlers.TryPeek(out var res) ? res.Item3 : _realBaseType ?? throw new InvalidOperationException();
 
-    public IntegratedIniDataHandler(Type baseType, string[]? basePath = null, bool allowGlobal = false)
+    public IntegratedIniHandler(Type baseType, string[]? basePath = null, bool allowGlobal = false)
     {
         _data = null;
         _records = new();
@@ -78,7 +78,7 @@ public class IntegratedIniDataHandler : IIniDataHandler
         if (_basePath.Length == 0)
         {
             _realBaseType = _baseType;
-            _globalHandler = ConversionUtil.SelectTypeHandler(_records[_baseType]);
+            _globalHandler = ConvertUtil.SelectTypeHandler(_records[_baseType]);
         }
         else
         {
@@ -141,7 +141,7 @@ public class IntegratedIniDataHandler : IIniDataHandler
         var (handler, type) = GetCurrentHandler().GetSectionHandler(section);
         _handlers.Push((
             section, 
-            handler ?? ConversionUtil.SelectTypeHandler(_records[type]), 
+            handler ?? ConvertUtil.SelectTypeHandler(_records[type]), 
             type
             ));
         GetCurrentHandler().Start();

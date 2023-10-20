@@ -1,5 +1,5 @@
 using IniDotNet;
-using IniDotNet.Model;
+using IniDotNet.Linq;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Model
@@ -11,8 +11,8 @@ namespace IniDotNet.Tests.Unit.Model
         public void resolve_case_insensitive_names()
         {
 
-            var data = new IniDataCaseInsensitive();
-            var section = new Section("TestSection");
+            var data = new IniObjectCaseInsensitive();
+            var section = new IniSection("TestSection");
             section.Properties.Add("keY1", "value1");
             section.Properties.Add("KEY2", "value2");
             section.Properties.Add("KeY2", "value3");
@@ -48,7 +48,7 @@ namespace IniDotNet.Tests.Unit.Model
         public void resolve_case_insensitive_names_in_global()
         {
 
-            var data = new IniDataCaseInsensitive();
+            var data = new IniObjectCaseInsensitive();
             data.Global.Add("keY1", "value1");
             data.Global.Add("KEY2", "value2");
             data.Global["KeY2"] = "value3";

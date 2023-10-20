@@ -1,13 +1,12 @@
 ﻿using IniDotNet.Base;
-using IniDotNet.Parser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IniDotNet.Model;
-public class DefaultIniDataHandler : IIniDataHandler<IniData>
+namespace IniDotNet.Linq;
+public class IniObjectHandler : IIniHandler<IniObject>
 {
     #region Fields & Properties
 
@@ -37,20 +36,20 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
     string? _currentSectionNameTemp;
 
     // Temp var of the value being parsed
-    IniData? _value;
-    IniData iniData => _value ?? (_value = new());
+    IniObject? _value;
+    IniObject iniData => _value ?? (_value = new());
 
     // configurations
-    public IniParserConfiguration Configuration { get; set; }
+    public IniParserConfig Configuration { get; set; }
 
     #endregion
 
-    public DefaultIniDataHandler()
+    public IniObjectHandler()
     {
-        Configuration = new IniParserConfiguration();
+        Configuration = new IniParserConfig();
     }
 
-    public IniData Get()
+    public IniObject Get()
     {
         return iniData;
     }
@@ -67,8 +66,8 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
     public void Start()
     {
         _value = Configuration.CaseInsensitive ?
-            new IniDataCaseInsensitive() :
-            new IniData();
+            new IniObjectCaseInsensitive() :
+            new IniObject();
     }
 
     public void End()
@@ -175,7 +174,7 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
     #region Helpers
 
     /// <summary>
-    ///     Adds a key to a concrete <see cref="PropertyCollection"/> instance, checking
+    ///     Adds a key to a concrete <see cref="IniPropertyCollection"/> instance, checking
     ///     if duplicate keys are allowed in the configuration
     /// </summary>
     /// <param name="key">
@@ -185,13 +184,13 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
     ///     Key's value
     /// </param>
     /// <param name="keyDataCollection">
-    ///     <see cref="Property"/> collection where the key should be inserted
+    ///     <see cref="IniProperty"/> collection where the key should be inserted
     /// </param>
     /// <param name="sectionName">
-    ///     Name of the section where the <see cref="PropertyCollection"/> is contained.
+    ///     Name of the section where the <see cref="IniPropertyCollection"/> is contained.
     ///     Used only for logging purposes.
     /// </param>
-    private void AddKeyToKeyValueCollection(string key, string value, PropertyCollection keyDataCollection, string sectionName, uint line)
+    private void AddKeyToKeyValueCollection(string key, string value, IniPropertyCollection keyDataCollection, string sectionName, uint line)
     {
         // Check for duplicated keys
         if (keyDataCollection.Contains(key))
@@ -221,24 +220,24 @@ public class DefaultIniDataHandler : IIniDataHandler<IniData>
     /// </summary>
     void HandleDuplicatedKeyInCollection(string key,
                                          string value,
-                                         PropertyCollection keyDataCollection,
+                                         IniPropertyCollection keyDataCollection,
                                          string sectionName,
                                          uint line)
     {
         switch (Configuration.DuplicatePropertiesBehaviour)
         {
-            case IniParserConfiguration.EDuplicatePropertiesBehaviour.DisallowAndStopWithError:
+            case IniParserConfig.EDuplicatePropertiesBehaviour.DisallowAndStopWithError:
                 var errorMsg = string.Format("Duplicated key '{0}' found in section '{1}", key, sectionName);
                 throw new ParsingException(errorMsg, line);
-            case IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue:
+            case IniParserConfig.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue:
                 // Nothing to do here: we already have the first value assigned
                 break;
-            case IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndKeepLastValue:
+            case IniParserConfig.EDuplicatePropertiesBehaviour.AllowAndKeepLastValue:
                 // Override the current value when the parsing is finished we will end up
                 // with the last value.
                 keyDataCollection[key] = value;
                 break;
-            case IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndConcatenateValues:
+            case IniParserConfig.EDuplicatePropertiesBehaviour.AllowAndConcatenateValues:
                 keyDataCollection[key] += Configuration.ConcatenateDuplicatePropertiesString + value;
                 break;
         }

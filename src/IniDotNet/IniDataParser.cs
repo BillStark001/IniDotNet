@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using IniDotNet.Model;
 using IniDotNet.Base;
+using IniDotNet.Linq;
 
 namespace IniDotNet
 {
     /// <summary>
 	/// 	Responsible for parsing an string from an ini file, and creating
-	/// 	an <see cref="IniData"/> structure.
+	/// 	an <see cref="IniObject"/> structure.
 	/// </summary>
     public partial class IniDataParser : IniParser
     {
@@ -30,7 +30,7 @@ namespace IniDotNet
         /// <param name="iniString">
         ///     String with data in INI format
         /// </param>
-        public IniData Parse(string iniString)
+        public IniObject Parse(string iniString)
         {
             return Parse(new StringReader(iniString));
         }
@@ -42,15 +42,15 @@ namespace IniDotNet
         ///     Text reader for the source string contaninig the ini data
         /// </param>
         /// <returns>
-        ///     An <see cref="IniData"/> instance containing the data readed
+        ///     An <see cref="IniObject"/> instance containing the data readed
         ///     from the source
         /// </returns>
         /// <exception cref="ParsingException">
         ///     Thrown if the data could not be parsed
         /// </exception>
-        public IniData Parse(TextReader textReader)
+        public IniObject Parse(TextReader textReader)
         {
-            DefaultIniDataHandler iniData = new();
+            IniObjectHandler iniData = new();
             iniData.Configuration = Configuration;
 
             Parse(textReader, iniData);

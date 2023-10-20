@@ -1,9 +1,8 @@
-﻿using IniDotNet.Base;
-using System;
+﻿using System;
 
-namespace IniDotNet.Format;
+namespace IniDotNet.Base;
 
-public class IniFormattingConfiguration : IDeepCloneable<IniFormattingConfiguration>
+public class IniFormatterConfig : IDeepCloneable<IniFormatterConfig>
 {
     public enum ENewLine
     {
@@ -11,7 +10,7 @@ public class IniFormattingConfiguration : IDeepCloneable<IniFormattingConfigurat
         Unix_Mac
     }
 
-    public IniFormattingConfiguration()
+    public IniFormatterConfig()
     {
         NewLineType = Environment.NewLine == "\r\n" ? ENewLine.Windows : ENewLine.Unix_Mac;
         NumSpacesBetweenAssigmentAndValue = 1;
@@ -19,8 +18,8 @@ public class IniFormattingConfiguration : IDeepCloneable<IniFormattingConfigurat
     }
 
     /// <summary>
-    ///     Gets or sets the string to use as new line string when formating an IniData structure using a
-    ///     IIniDataFormatter. Parsing an ini-file accepts any new line character (Unix/windows)
+    ///     Gets or sets the string to use as new line string when formating an IniObject structure using a
+    ///     IIniFormatter. Parsing an ini-file accepts any new line character (Unix/windows)
     /// </summary>
     /// <remarks>
     ///     This allows to write a file with unix new line characters on windows (and vice versa)
@@ -82,9 +81,9 @@ public class IniFormattingConfiguration : IDeepCloneable<IniFormattingConfigurat
 
 
     #region IDeepCloneable<T> Members
-    public IniFormattingConfiguration DeepClone()
+    public IniFormatterConfig DeepClone()
     {
-        return MemberwiseClone() as IniFormattingConfiguration ?? throw new InvalidOperationException();
+        return MemberwiseClone() as IniFormatterConfig ?? throw new InvalidOperationException();
     }
 
     #endregion

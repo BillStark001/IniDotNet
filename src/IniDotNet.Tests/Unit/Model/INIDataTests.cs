@@ -1,5 +1,5 @@
 ﻿using IniDotNet;
-using IniDotNet.Model;
+using IniDotNet.Linq;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Model
@@ -36,7 +36,7 @@ value1 = 10.6";
         [Test]
         public void check_add_keydata_method_using_key_and_value_strings()
         {
-            var newData = new IniData();
+            var newData = new IniObject();
 
             newData.Sections.Add("newSection");
             newData["newSection"].Add("newKey1", "value1");

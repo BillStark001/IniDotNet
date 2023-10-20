@@ -1,4 +1,4 @@
-using IniDotNet.Model;
+using IniDotNet.Linq;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Model
@@ -9,7 +9,7 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_creating_programatically()
         {
-            var col = new PropertyCollection();
+            var col = new IniPropertyCollection();
             col.Add("key1");
 
             Assert.That(col["key1"], Is.Empty);
@@ -19,7 +19,7 @@ namespace IniDotNet.Tests.Unit.Model
 
             Assert.That(col["key2"], Is.EqualTo("value2"));
 
-            var keyData = new Property("key3");
+            var keyData = new IniProperty("key3");
             keyData.Value = "value3";
             col.Add(keyData);
 
@@ -29,7 +29,7 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_deep_clone()
         {
-            var ori = new PropertyCollection();
+            var ori = new IniPropertyCollection();
 
             ori.Add("key1", "value1");
 

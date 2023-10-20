@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using IniDotNet.Integrated;
-using IniDotNet.Model;
+using IniDotNet.Linq;
 
 namespace IniDotNet.Example
 {
@@ -33,7 +33,7 @@ patty = pattypass ";
             parser.Scheme.AssignFrom(new(parser.Configuration));
 
             // Here we'll be storing the contents of the ini file we are about to read:
-            IniData parsedData = parser.Parse(testIniFile);
+            IniObject parsedData = parser.Parse(testIniFile);
 
             // Write down the contents of the ini file to the console
             Console.WriteLine("---- Printing contents of the INI file ----\n");
@@ -70,7 +70,7 @@ patty = pattypass ";
             iniParser.Configuration.AllowNumberSignComments = true;
             iniParser.Scheme.AssignFrom(new(parser.Configuration));
 
-            var handler = new IntegratedIniDataHandler(typeof(ConfigModel));
+            var handler = new IntegratedIniHandler(typeof(ConfigModel));
             iniParser.Parse(new StringReader(testIniFile), handler);
             var result = (ConfigModel)handler.Data!;
 

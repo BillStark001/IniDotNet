@@ -2,51 +2,51 @@ using System.Collections;
 using System.Collections.Generic;
 using IniDotNet.Base;
 
-namespace IniDotNet.Model;
+namespace IniDotNet.Linq;
 
 
 /// <summary>
 ///     Represents a collection of Keydata.
 /// </summary>
-public class PropertyCollection : IDeepCloneable<PropertyCollection>, IEnumerable<Property>
+public class IniPropertyCollection : IDeepCloneable<IniPropertyCollection>, IEnumerable<IniProperty>
 {
     #region Initialization
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="PropertyCollection"/> class.
+    ///     Initializes a new instance of the <see cref="IniPropertyCollection"/> class.
     /// </summary>
-    public PropertyCollection()
+    public IniPropertyCollection()
         : this(EqualityComparer<string>.Default)
     { }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="PropertyCollection"/> class with a given
+    ///     Initializes a new instance of the <see cref="IniPropertyCollection"/> class with a given
     ///     search comparer
     /// </summary>
     /// <param name="searchComparer">
     ///     Search comparer used to find the key by name in the collection
     /// </param>
-    public PropertyCollection(IEqualityComparer<string> searchComparer)
+    public IniPropertyCollection(IEqualityComparer<string> searchComparer)
     {
         _searchComparer = searchComparer;
-        _properties = new Dictionary<string, Property>(_searchComparer);
+        _properties = new Dictionary<string, IniProperty>(_searchComparer);
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="PropertyCollection"/> class
-    ///     from a previous instance of <see cref="PropertyCollection"/>.
+    ///     Initializes a new instance of the <see cref="IniPropertyCollection"/> class
+    ///     from a previous instance of <see cref="IniPropertyCollection"/>.
     /// </summary>
     /// <remarks>
     ///     Data from the original KeyDataCollection instance is deeply copied
     /// </remarks>
     /// <param name="ori">
-    ///     The instance of the <see cref="PropertyCollection"/> class 
+    ///     The instance of the <see cref="IniPropertyCollection"/> class 
     ///     used to create the new instance.
     /// </param>
-    public PropertyCollection(PropertyCollection ori, IEqualityComparer<string> searchComparer)
+    public IniPropertyCollection(IniPropertyCollection ori, IEqualityComparer<string> searchComparer)
         : this(searchComparer)
     {
-        foreach (Property property in ori)
+        foreach (IniProperty property in ori)
         {
             if (_properties.ContainsKey(property.Key))
             {
@@ -116,7 +116,7 @@ public class PropertyCollection : IDeepCloneable<PropertyCollection>, IEnumerabl
     {
         if (!_properties.ContainsKey(key))
         {
-            AddPropertyInternal(new Property(key, string.Empty));
+            AddPropertyInternal(new IniProperty(key, string.Empty));
             return true;
         }
 
@@ -127,13 +127,13 @@ public class PropertyCollection : IDeepCloneable<PropertyCollection>, IEnumerabl
     ///     Adds a new property to the collection
     /// </summary>
     /// <param name="property">
-    ///     Property instance.
+    ///     IniProperty instance.
     /// </param>
     /// <returns>
     ///     true if the property was added  false if a property with the
     ///     same key already exist in the collection
     /// </returns>
-    public bool Add(Property property)
+    public bool Add(IniProperty property)
     {
         if (!_properties.ContainsKey(property.Key))
         {
@@ -160,7 +160,7 @@ public class PropertyCollection : IDeepCloneable<PropertyCollection>, IEnumerabl
     {
         if (!_properties.ContainsKey(key))
         {
-            AddPropertyInternal(new Property(key, value));
+            AddPropertyInternal(new IniProperty(key, value));
             return true;
         }
         return false;
@@ -198,10 +198,10 @@ public class PropertyCollection : IDeepCloneable<PropertyCollection>, IEnumerabl
     /// </summary>
     /// <param name="keyName">Name of the key to retrieve.</param>
     /// <returns>
-    /// A <see cref="Property"/> instance holding
+    /// A <see cref="IniProperty"/> instance holding
     /// the key information or <c>null</c> if the key wasn't found.
     /// </returns>
-    public Property? FindByKey(string keyName)
+    public IniProperty? FindByKey(string keyName)
     {
         if (_properties.ContainsKey(keyName))
             return _properties[keyName];
@@ -209,7 +209,7 @@ public class PropertyCollection : IDeepCloneable<PropertyCollection>, IEnumerabl
     }
 
     /// <summary>
-    ///     Merges other Property into this, adding new properties if they 
+    ///     Merges other IniProperty into this, adding new properties if they 
     ///     did not existed or overwriting values if the properties already 
     ///     existed.
     /// </summary>
@@ -217,7 +217,7 @@ public class PropertyCollection : IDeepCloneable<PropertyCollection>, IEnumerabl
     ///     Comments are also merged but they are always added, not overwritten.
     /// </remarks>
     /// <param name="propertyToMerge"></param>
-    public void Merge(PropertyCollection propertyToMerge)
+    public void Merge(IniPropertyCollection propertyToMerge)
     {
         foreach (var keyData in propertyToMerge)
         {
@@ -254,7 +254,7 @@ public class PropertyCollection : IDeepCloneable<PropertyCollection>, IEnumerabl
     /// Allows iteration througt the collection.
     /// </summary>
     /// <returns>A strong-typed IEnumerator </returns>
-    public IEnumerator<Property> GetEnumerator()
+    public IEnumerator<IniProperty> GetEnumerator()
     {
         foreach (string key in _properties.Keys)
             yield return _properties[key];
@@ -283,16 +283,16 @@ public class PropertyCollection : IDeepCloneable<PropertyCollection>, IEnumerabl
     /// <returns>
     /// A new object that is a copy of this instance.
     /// </returns>
-    public PropertyCollection DeepClone()
+    public IniPropertyCollection DeepClone()
     {
-        return new PropertyCollection(this, _searchComparer);
+        return new IniPropertyCollection(this, _searchComparer);
     }
 
     #endregion
 
     #region Helpers
     // Adds a property w/out checking if it is already contained in the dictionary
-    internal void AddPropertyInternal(Property property)
+    internal void AddPropertyInternal(IniProperty property)
     {
         _lastAdded = property;
         _properties.Add(property.Key, property);
@@ -302,16 +302,16 @@ public class PropertyCollection : IDeepCloneable<PropertyCollection>, IEnumerabl
     #region Non-public Members
     // Hack for getting the last property value (if exists) w/out using LINQ
     // that will cause allocations
-    Property? _lastAdded;
-    internal Property? GetLast()
+    IniProperty? _lastAdded;
+    internal IniProperty? GetLast()
     {
         return _lastAdded;
     }
 
     /// <summary>
-    /// Collection of Property for a given section
+    /// Collection of IniProperty for a given section
     /// </summary>
-    private readonly Dictionary<string, Property> _properties;
+    private readonly Dictionary<string, IniProperty> _properties;
 
     readonly IEqualityComparer<string> _searchComparer;
     #endregion

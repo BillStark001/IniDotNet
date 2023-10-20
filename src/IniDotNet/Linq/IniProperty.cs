@@ -2,21 +2,21 @@ using System;
 using System.Collections.Generic;
 using IniDotNet.Base;
 
-namespace IniDotNet.Model;
+namespace IniDotNet.Linq;
 
 /// <summary>
 ///     Information associated to a property from an INI file.
 ///     Includes both the key, the value and the comments associated to 
 ///     the property.
 /// </summary>
-public class Property : IDeepCloneable<Property>
+public class IniProperty : IDeepCloneable<IniProperty>
 {
     #region Initialization
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Property"/> class.
+    ///     Initializes a new instance of the <see cref="IniProperty"/> class.
     /// </summary>
-    public Property(string keyName, string value = "")
+    public IniProperty(string keyName, string value = "")
     {
         if (string.IsNullOrEmpty(keyName))
             throw new ArgumentException("key name can not be empty", nameof(Key));
@@ -26,17 +26,17 @@ public class Property : IDeepCloneable<Property>
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Property"/> class
-    ///     from a previous instance of <see cref="Property"/>.
+    ///     Initializes a new instance of the <see cref="IniProperty"/> class
+    ///     from a previous instance of <see cref="IniProperty"/>.
     /// </summary>
     /// <remarks>
     ///     Data is deeply copied
     /// </remarks>
     /// <param name="ori">
-    ///     The instance of the <see cref="Property"/> class 
+    ///     The instance of the <see cref="IniProperty"/> class 
     ///     used to create the new instance.
     /// </param>
-    public Property(Property ori)
+    public IniProperty(IniProperty ori)
     {
         Value = ori.Value;
         Key = ori.Key;
@@ -89,9 +89,9 @@ public class Property : IDeepCloneable<Property>
 
     #region IDeepCloneable<T> Members
 
-    public Property DeepClone()
+    public IniProperty DeepClone()
     {
-        return new Property(this);
+        return new IniProperty(this);
     }
 
     #endregion

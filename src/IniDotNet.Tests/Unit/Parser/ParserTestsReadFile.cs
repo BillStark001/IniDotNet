@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using IniDotNet.Exceptions;
-using IniDotNet.Model;
+using IniDotNet.Base;
+using IniDotNet.Linq;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Parser
@@ -10,7 +10,7 @@ namespace IniDotNet.Tests.Unit.Parser
     [TestFixture]
     public partial class ParserTests
     {
-        IniData ReadAndParseIniFile(IniDataParser parser, string fileName, Encoding fileEncoding)
+        IniObject ReadAndParseIniFile(IniDataParser parser, string fileName, Encoding fileEncoding)
         {
             var filePath = Path.Combine(TestContext.CurrentContext.TestDirectory, fileName);
 
@@ -47,7 +47,7 @@ namespace IniDotNet.Tests.Unit.Parser
         {
             var parser = new IniDataParser();
 
-            IniData parsedData = ReadAndParseIniFile(parser, "real_file.ini", Encoding.ASCII);
+            IniObject parsedData = ReadAndParseIniFile(parser, "real_file.ini", Encoding.ASCII);
 
             Assert.That(parsedData.Global[".reg (Win)"], Is.EqualTo("notepad.exe"));
         }
@@ -59,7 +59,7 @@ namespace IniDotNet.Tests.Unit.Parser
             // parser.Scheme.CommentString = "//";
             parser.Scheme.CommentPattern = new(@"^ *(//)(.*)");
 
-            IniData parsedData = ReadAndParseIniFile(parser, "long_file.ini", Encoding.ASCII);
+            IniObject parsedData = ReadAndParseIniFile(parser, "long_file.ini", Encoding.ASCII);
 
             Assert.That(parsedData["contact_points"]["point.0"], 
                 Is.EqualTo("1,  84.64,   0.00,  -19.05, 1600, 0, 1.8, 70,  1.8, 1.0, 0.9,  9,  8, 0, 270, 290"));
@@ -70,7 +70,7 @@ namespace IniDotNet.Tests.Unit.Parser
         {
             var parser = new IniDataParser();
 
-            IniData parsedData = ReadAndParseIniFile(parser, "unicode_chinese_example.ini", Encoding.UTF8);
+            IniObject parsedData = ReadAndParseIniFile(parser, "unicode_chinese_example.ini", Encoding.UTF8);
 
             Assert.That(parsedData["HSK1.Grammar.Adverb 太"]["structure"], Is.EqualTo("太 + %adjective% + 了"));
         }

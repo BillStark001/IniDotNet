@@ -1,7 +1,6 @@
 ﻿using IniDotNet.Integrated.Handler;
 using IniDotNet.Integrated.Model;
 using IniDotNet.Integrated.Serializer;
-using IniDotNet.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,15 +9,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IniDotNet.Integrated;
+namespace IniDotNet.Util;
 
 
 using DSSP = Dictionary<(string, string), PropertyInfo>;
 
 
-
-
-public static class ConversionUtil
+public static class ConvertUtil
 {
     public static bool IsStringDictionary(Type t)
     {
@@ -113,10 +110,10 @@ public static class ConversionUtil
 
     private static readonly MethodInfo _cvrt;
     private static readonly MethodInfo _cvrt2;
-    static ConversionUtil()
+    static ConvertUtil()
     {
-        _cvrt = typeof(ConversionUtil).GetMethod(nameof(TryGetConverter))!;
-        _cvrt2 = typeof(ConversionUtil).GetMethod(nameof(TryGetConverterInner))!;
+        _cvrt = typeof(ConvertUtil).GetMethod(nameof(TryGetConverter))!;
+        _cvrt2 = typeof(ConvertUtil).GetMethod(nameof(TryGetConverterInner))!;
     }
 
     public static SerializerRecord? TryGetConverterRefl(Type reflType, Assembly[] assembly)

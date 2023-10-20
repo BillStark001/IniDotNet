@@ -1,5 +1,5 @@
 ﻿using System;
-using IniDotNet.Model;
+using IniDotNet.Linq;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Model
@@ -10,7 +10,7 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_default_values()
         {
-            var sd = new Section("section_test");
+            var sd = new IniSection("section_test");
 
             Assert.That(sd, Is.Not.Null);
             Assert.That(sd.Name, Is.EqualTo("section_test"));
@@ -21,13 +21,13 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_create_section_with_invalid_name_throws()
         {
-            Assert.Throws(typeof(ArgumentException), () => new Section(""));
+            Assert.Throws(typeof(ArgumentException), () => new IniSection(""));
         }
 
         [Test]
         public void check_cannot_change_section_name_with_invalid_name()
         {
-            var sd = new Section("section_test");
+            var sd = new IniSection("section_test");
 
             sd.Name = "";
 
@@ -37,7 +37,7 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_change_section_name()
         {
-            var sd = new Section("section_test");
+            var sd = new IniSection("section_test");
 
             sd.Name = "section_test_2";
 
@@ -53,7 +53,7 @@ namespace IniDotNet.Tests.Unit.Model
             string strKeyTest = "Mykey";
             string strValueTest = "My value";
 
-            var sd = new Section("section_test");
+            var sd = new IniSection("section_test");
 
             //Add key
             sd.Properties.Add(strKeyTest);
@@ -70,7 +70,7 @@ namespace IniDotNet.Tests.Unit.Model
         {
             string strKeyTest = "Mykey";
 
-            var sd = new Section("section_test");
+            var sd = new IniSection("section_test");
 
             //Add key
             sd.Properties.Add(strKeyTest);
@@ -87,7 +87,7 @@ namespace IniDotNet.Tests.Unit.Model
         {
             string strKeyTest = "Mykey";
 
-            var sd = new Section("section_test");
+            var sd = new IniSection("section_test");
 
             //Add key
             sd.Properties.Add(strKeyTest);
@@ -104,7 +104,7 @@ namespace IniDotNet.Tests.Unit.Model
         {
             string strKeyTest = "Mykey";
 
-            var sd = new Section("section_test");
+            var sd = new IniSection("section_test");
 
             //Add key
             sd.Properties.Add(strKeyTest);
@@ -117,7 +117,7 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void try_accessing_non_existing_key()
         {
-            var sd = new Section("section_test");
+            var sd = new IniSection("section_test");
 
             //Access invalid keydata
             Assert.That(sd.Properties["asdf"], Is.Null);
@@ -126,8 +126,8 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_merging_sections()
         {
-            var destinySection = new Section("destiny_section");
-            var newSection = new Section("new_section");
+            var destinySection = new IniSection("destiny_section");
+            var newSection = new IniSection("new_section");
 
             //Add key
             destinySection.Properties.Add("key1", "value1");
@@ -147,7 +147,7 @@ namespace IniDotNet.Tests.Unit.Model
         [Test]
         public void check_deep_clone()
         {
-            var section = new Section("ori_section");
+            var section = new IniSection("ori_section");
             section.Properties.Add("key1", "value1");
             section.Properties.Add("key2", "value2");
 

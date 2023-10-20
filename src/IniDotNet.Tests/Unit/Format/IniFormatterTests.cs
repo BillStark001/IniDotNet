@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
-using IniDotNet.Format;
+using IniDotNet.Base;
+using IniDotNet.Linq;
 
 namespace IniDotNet.Tests.Unit.Format
 {
@@ -7,15 +8,15 @@ namespace IniDotNet.Tests.Unit.Format
     public class IniFormatterTests
     {
         IniDataParser parser;
-        IniDataFormatter formatter;
-        IniFormattingConfiguration formatConfig;
+        IniObjectFormatter formatter;
+        IniFormatterConfig formatConfig;
 
         [SetUp]
         public void Setup()
         {
             parser = new IniDataParser();
-            formatter = new IniDataFormatter();
-            formatConfig = new IniFormattingConfiguration();
+            formatter = new IniObjectFormatter();
+            formatConfig = new IniFormatterConfig();
         }
 
         [Test]

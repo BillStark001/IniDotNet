@@ -2,58 +2,58 @@ using System;
 using System.Collections.Generic;
 using IniDotNet.Base;
 
-namespace IniDotNet.Model;
+namespace IniDotNet.Linq;
 
 
 /// <summary>
 ///     Information associated to a section in a INI File
 ///     Includes both the properties and the comments associated to the section.
 /// </summary>
-public class Section : IDeepCloneable<Section>
+public class IniSection : IDeepCloneable<IniSection>
 {
     #region Initialization
 
-    public Section(string sectionName)
+    public IniSection(string sectionName)
         : this(sectionName, EqualityComparer<string>.Default)
     {
 
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Section"/> class.
+    ///     Initializes a new instance of the <see cref="IniSection"/> class.
     /// </summary>
-    public Section(string sectionName, IEqualityComparer<string> searchComparer)
+    public IniSection(string sectionName, IEqualityComparer<string> searchComparer)
     {
         _searchComparer = searchComparer;
 
         if (string.IsNullOrEmpty(sectionName))
             throw new ArgumentException("section name can not be empty", nameof(sectionName));
 
-        Properties = new PropertyCollection(_searchComparer);
+        Properties = new IniPropertyCollection(_searchComparer);
         Name = sectionName;
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Section"/> class
-    ///     from a previous instance of <see cref="Section"/>.
+    ///     Initializes a new instance of the <see cref="IniSection"/> class
+    ///     from a previous instance of <see cref="IniSection"/>.
     /// </summary>
     /// <remarks>
     ///     Data is deeply copied
     /// </remarks>
     /// <param name="ori">
-    ///     The instance of the <see cref="Section"/> class 
+    ///     The instance of the <see cref="IniSection"/> class 
     ///     used to create the new instance.
     /// </param>
     /// <param name="searchComparer">
     ///     Search comparer.
     /// </param>
-    public Section(Section ori, IEqualityComparer<string>? searchComparer = null)
+    public IniSection(IniSection ori, IEqualityComparer<string>? searchComparer = null)
     {
         Name = ori.Name;
 
         _searchComparer = searchComparer ?? EqualityComparer<string>.Default;
         Comments = ori.Comments;
-        Properties = new PropertyCollection(ori.Properties, searchComparer ?? ori._searchComparer);
+        Properties = new IniPropertyCollection(ori.Properties, searchComparer ?? ori._searchComparer);
     }
 
     #endregion
@@ -114,12 +114,12 @@ public class Section : IDeepCloneable<Section>
     ///     Gets or sets the properties associated to this section.
     /// </summary>
     /// <value>
-    ///     A collection of Property objects.
+    ///     A collection of IniProperty objects.
     /// </value>
-    public PropertyCollection Properties { get; set; }
+    public IniPropertyCollection Properties { get; set; }
 
     /// <summary>
-    ///     Deletes all comments and properties from this Section
+    ///     Deletes all comments and properties from this IniSection
     /// </summary>
     public void Clear()
     {
@@ -153,7 +153,7 @@ public class Section : IDeepCloneable<Section>
     ///     Comments are also merged but they are always added, not overwritten.
     /// </remarks>
     /// <param name="toMergeSection"></param>
-    public void Merge(Section toMergeSection)
+    public void Merge(IniSection toMergeSection)
     {
         Properties.Merge(toMergeSection.Properties);
 
@@ -162,9 +162,9 @@ public class Section : IDeepCloneable<Section>
     }
 
     #region IDeepCloneable<T> Members
-    public Section DeepClone()
+    public IniSection DeepClone()
     {
-        return new Section(this);
+        return new IniSection(this);
     }
     #endregion
 

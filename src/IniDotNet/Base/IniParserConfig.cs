@@ -1,7 +1,6 @@
-﻿using IniDotNet.Base;
-using IniDotNet.Model;
+﻿using IniDotNet.Linq;
 
-namespace IniDotNet.Parser;
+namespace IniDotNet.Base;
 
 /// <summary>
 ///     Defines data for a Parser configuration object.
@@ -14,13 +13,13 @@ namespace IniDotNet.Parser;
 ///     the ini file (e.g. change the 'comment' caracter from ';' to '#')
 ///     You can also define how the parser should treat errors, or how liberal
 ///     or conservative should it be when parsing files with "strange" formats.
-public class IniParserConfiguration : IDeepCloneable<IniParserConfiguration>
+public class IniParserConfig : IDeepCloneable<IniParserConfig>
 {
     /// <summary>
     ///     Default values used if an instance of <see cref="IniDataParser"/>
     ///     is created without specifying a configuration.
     /// </summary>
-    public IniParserConfiguration()
+    public IniParserConfig()
     {
     }
 
@@ -30,7 +29,7 @@ public class IniParserConfiguration : IDeepCloneable<IniParserConfiguration>
     /// <param name="ori">
     ///     Original instance to be copied.
     /// </param>
-    IniParserConfiguration(IniParserConfiguration ori)
+    IniParserConfig(IniParserConfig ori)
     {
         AllowKeysWithoutSection = ori.AllowKeysWithoutSection;
         DuplicatePropertiesBehaviour = ori.DuplicatePropertiesBehaviour;
@@ -59,7 +58,7 @@ public class IniParserConfiguration : IDeepCloneable<IniParserConfiguration>
     /// <summary>
     ///     Allows having keys at the begining of the file, before any section 
     ///     is defined. Those keys  don't belong to any section and are stored in 
-    ///     the <see cref="IniData.Global"/> special field.
+    ///     the <see cref="IniObject.Global"/> special field.
     ///     If set to false and the ini file contains keys outside a section,
     ///     the parser will stop with an error.
     /// </summary>
@@ -127,7 +126,7 @@ public class IniParserConfiguration : IDeepCloneable<IniParserConfiguration>
     ///     If set to false and the <see cref="IniDataParser"/> finds a duplicate section
     ///     the parser will stop with an error.
     ///     If set to true, duplicated sections are allowed in the file, but only a
-    ///     <see cref="Section"/> element will be created in the <see cref="IniData.Sections"/>
+    ///     <see cref="IniSection"/> element will be created in the <see cref="IniObject.Sections"/>
     ///     collection.
     /// </summary>
     /// <remarks>
@@ -221,9 +220,9 @@ public class IniParserConfiguration : IDeepCloneable<IniParserConfiguration>
     /// <summary>
     /// Creates a new object that is a copy of the current instance.
     /// </summary>
-    public IniParserConfiguration DeepClone()
+    public IniParserConfig DeepClone()
     {
-        return new IniParserConfiguration(this);
+        return new IniParserConfig(this);
     }
     #endregion
 }

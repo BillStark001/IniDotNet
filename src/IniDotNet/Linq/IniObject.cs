@@ -1,36 +1,35 @@
 using IniDotNet.Base;
-using IniDotNet.Parser;
 
-namespace IniDotNet.Model
+namespace IniDotNet.Linq
 {
     /// <summary>
     ///     Represents all data from an INI file
     /// </summary>
-    public class IniData : IDeepCloneable<IniData>
+    public class IniObject : IDeepCloneable<IniObject>
     {
         #region Initialization
 
         /// <summary>
-        ///     Initializes an empty IniData instance.
+        ///     Initializes an empty IniObject instance.
         /// </summary>
-        public IniData()
+        public IniObject()
         {
-            Global = new PropertyCollection();
-            Sections = new SectionCollection();
+            Global = new IniPropertyCollection();
+            Sections = new IniSectionCollection();
             _scheme = new IniScheme();
         }
 
         /// <summary>
-        ///     Initialzes an IniData instance with a given scheme
+        ///     Initialzes an IniObject instance with a given scheme
         /// </summary>
         /// <param name="scheme"></param>
-        public IniData(IniScheme scheme)
+        public IniObject(IniScheme scheme)
          : this()
         {
             _scheme = scheme.DeepClone();
         }
 
-        public IniData(IniData ori)
+        public IniObject(IniObject ori)
         {
             Sections = ori.Sections.DeepClone();
             Global = ori.Global.DeepClone();
@@ -54,20 +53,20 @@ namespace IniDotNet.Model
         ///     delimiter characters and data.
         /// </summary>
         /// <remarks>
-        ///     If the <see cref="IniData"/> instance was created by a parser,
-        ///     this instance is a copy of the <see cref="IniParserConfiguration"/> used
+        ///     If the <see cref="IniObject"/> instance was created by a parser,
+        ///     this instance is a copy of the <see cref="IniParserConfig"/> used
         ///     by the parser (i.e. different objects instances)
         ///     If this instance is created programatically without using a parser, this
-        ///     property returns an instance of <see cref=" IniParserConfiguration"/>
+        ///     property returns an instance of <see cref=" IniParserConfig"/>
         /// </remarks>
-        public IniParserConfiguration Configuration
+        public IniParserConfig Configuration
         {
             get
             {
                 // Lazy initialization
                 if (_configuration == null)
                 {
-                    _configuration = new IniParserConfiguration();
+                    _configuration = new IniParserConfig();
                 }
 
                 return _configuration;
@@ -103,14 +102,14 @@ namespace IniDotNet.Model
         /// 	enclosed in any section (i.e. they are defined at the beginning 
         /// 	of the file, before any section.
         /// </summary>
-        public PropertyCollection Global { get; protected set; }
+        public IniPropertyCollection Global { get; protected set; }
 
         /// <summary>
-        /// Gets the <see cref="PropertyCollection"/> instance 
+        /// Gets the <see cref="IniPropertyCollection"/> instance 
         /// with the specified section name.
         /// with the specified section name.
         /// </summary>
-        public PropertyCollection? this[string sectionName]
+        public IniPropertyCollection? this[string sectionName]
         {
             get
             {
@@ -125,10 +124,10 @@ namespace IniDotNet.Model
         }
 
         /// <summary>
-        /// Gets or sets all the <see cref="Section"/> 
-        /// for this IniData instance.
+        /// Gets or sets all the <see cref="IniSection"/> 
+        /// for this IniObject instance.
         /// </summary>
-        public SectionCollection Sections { get; set; }
+        public IniSectionCollection Sections { get; set; }
 
         /// <summary>
         ///     Deletes all data
@@ -156,10 +155,10 @@ namespace IniDotNet.Model
         ///     Comments get appended.
         /// </summary>
         /// <param name="toMergeIniData">
-        ///     IniData instance to merge into this. 
+        ///     IniObject instance to merge into this. 
         ///     If it is null this operation does nothing.
         /// </param>
-        public void Merge(IniData toMergeIniData)
+        public void Merge(IniObject toMergeIniData)
         {
             if (toMergeIniData == null) return;
 
@@ -175,9 +174,9 @@ namespace IniDotNet.Model
         /// <returns>
         ///     A new object that is a copy of this instance.
         /// </returns>
-        public IniData DeepClone()
+        public IniObject DeepClone()
         {
-            return new IniData(this);
+            return new IniObject(this);
         }
 
         #endregion
@@ -186,7 +185,7 @@ namespace IniDotNet.Model
         /// <summary>
         ///     See property <see cref="Configuration"/> for more information. 
         /// </summary>
-        private IniParserConfiguration? _configuration;
+        private IniParserConfig? _configuration;
         /// <summary>
         ///     Represents all sections from an INI file
         /// </summary>

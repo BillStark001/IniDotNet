@@ -1,4 +1,4 @@
-﻿using IniDotNet.Model;
+﻿using IniDotNet.Linq;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Configuration
@@ -9,7 +9,7 @@ namespace IniDotNet.Tests.Unit.Configuration
         [Test]
         public void check_comment_string()
         {
-            IniData iniData;
+            IniObject iniData;
             var parser = new IniDataParser();
 
 
@@ -50,7 +50,7 @@ key1=1";
         [Test]
         public void check_section_string()
         {
-            IniData iniData;
+            IniObject iniData;
             var parser = new IniDataParser();
 
             /*
@@ -98,7 +98,7 @@ key1=1";
         [Test]
         public void check_property_assignment_string()
         {
-            IniData iniData;
+            IniObject iniData;
             var parser = new IniDataParser();
             parser.Configuration.AllowKeysWithoutSection = true;
 

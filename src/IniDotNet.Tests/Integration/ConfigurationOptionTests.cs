@@ -1,6 +1,5 @@
 ﻿using IniDotNet;
 using IniDotNet.Base;
-using IniDotNet.Parser;
 using NUnit.Framework;
 
 namespace IniDotNet.Tests.Unit.Configuration
@@ -71,24 +70,24 @@ data1 = 5";
 
             var parser = new IniDataParser();
 
-            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfiguration.EDuplicatePropertiesBehaviour.DisallowAndStopWithError;
+            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfig.EDuplicatePropertiesBehaviour.DisallowAndStopWithError;
 
             Assert.Throws(typeof(ParsingException), () => {
                 parser.Parse(ini);
             });
 
-            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue;
+            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfig.EDuplicatePropertiesBehaviour.AllowAndKeepFirstValue;
 
             var iniData = parser.Parse(ini);
 
             Assert.That(iniData["Section1"]["data1"], Is.EqualTo("1"));
 
-            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndKeepLastValue;
+            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfig.EDuplicatePropertiesBehaviour.AllowAndKeepLastValue;
 
             iniData = parser.Parse(ini);
             Assert.That(iniData["Section1"]["data1"], Is.EqualTo("5"));
 
-            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfiguration.EDuplicatePropertiesBehaviour.AllowAndConcatenateValues;
+            parser.Configuration.DuplicatePropertiesBehaviour = IniParserConfig.EDuplicatePropertiesBehaviour.AllowAndConcatenateValues;
             parser.Configuration.ConcatenateDuplicatePropertiesString = ";;";
 
             iniData = parser.Parse(ini);
